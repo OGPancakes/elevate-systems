@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { Bot, Loader2, Send, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,16 +19,18 @@ const starterMessages: ChatMessage[] = [
   }
 ];
 
+function formatMessage(content: string) {
+  return content
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/^\s*\d+\.\s*/gm, "")
+    .trim();
+}
+
 export function ElevateBot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(starterMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const lastAssistantMessage = useMemo(
-    () => messages.filter((message) => message.role === "assistant").at(-1)?.content,
-    [messages]
-  );
 
   async function submitMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -109,7 +111,7 @@ export function ElevateBot() {
                   : "self-end bg-sky-400 text-slate-950"
               )}
             >
-              {message.content}
+              {formatMessage(message.content)}
             </div>
           ))}
           {loading ? (
@@ -133,7 +135,6 @@ export function ElevateBot() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
-          <p className="mt-2 text-[11px] leading-5 text-white/40">{lastAssistantMessage}</p>
         </form>
       </div>
 
