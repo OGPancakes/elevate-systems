@@ -17,9 +17,9 @@ import {
 import { DashboardPreview } from "@/components/dashboard-preview";
 import { ElevateBot } from "@/components/elevate-bot";
 import { Button } from "@/components/ui/button";
+import { WebsiteAudit } from "@/components/website-audit";
 
-const bookingUrl =
-  process.env.NEXT_PUBLIC_BOOKING_URL ?? "https://cal.com/elevate-systems/consultation";
+const bookingUrl = "/book";
 
 const services = [
   {
@@ -139,7 +139,7 @@ export default function Home() {
             </div>
           </a>
           <div className="hidden items-center gap-1 md:flex">
-            {["Services", "Proof", "FAQ", "Contact"].map((item) => (
+            {["Services", "Audit", "Proof", "FAQ", "Contact"].map((item) => (
               <a
                 className="rounded-md px-3 py-2 text-sm text-white/60 transition hover:bg-white/10 hover:text-white"
                 href={`#${item.toLowerCase()}`}
@@ -241,6 +241,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <WebsiteAudit />
 
       <section className="section-pad border-y border-white/10 bg-white/[0.025]">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-[0.82fr_1.18fr]">
