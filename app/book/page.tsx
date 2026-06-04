@@ -112,10 +112,10 @@ export default async function BookPage({
             ) : (
               <div className="flex min-h-[360px] flex-col items-center justify-center p-8 text-center">
                 <CalendarCheck className="h-12 w-12 text-sky-300" />
-                <h2 className="mt-5 text-2xl font-semibold text-white">Calendar connection pending</h2>
+                <h2 className="mt-5 text-2xl font-semibold text-white">Calendar coming online</h2>
                 <p className="mt-3 max-w-md leading-7 text-white/60">
-                  Add your Microsoft Bookings embed URL as NEXT_PUBLIC_MICROSOFT_BOOKINGS_URL
-                  in Vercel to show the live scheduler here.
+                  Our scheduling calendar is being connected. Send a request below and we will
+                  follow up with available consultation times.
                 </p>
               </div>
             )}
