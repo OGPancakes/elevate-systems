@@ -21,6 +21,20 @@ Your goals:
 
 Keep replies concise, warm, and consultative. Use 2 to 4 short sentences unless the user asks for more detail. Do not use markdown, numbered lists, or long checklists. Ask one clear follow-up question at the end when qualification is useful. Never claim a booking is confirmed unless the user used the booking link.`;
 
+function cleanReply(content: string) {
+  const plain = content
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/^\s*[-*]\s+/gm, "")
+    .replace(/^\s*\d+\.\s*/gm, "")
+    .replace(/\s*\n+\s*/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  const sentences = plain.match(/[^.!?]+[.!?]+/g);
+  if (!sentences || sentences.length <= 4) return plain;
+  return sentences.slice(0, 4).join(" ").trim();
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as { messages?: IncomingMessage[] };
@@ -37,6 +51,7 @@ export async function POST(request: Request) {
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.45,
+      max_tokens: 140,
       messages: [
         { role: "system", content: systemPrompt },
         ...messages.map((message) => ({
@@ -48,8 +63,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       message:
-        completion.choices[0]?.message.content ??
-        "I can help qualify your project and point you toward the right Elevate Systems service."
+        cleanReply(
+          completion.choices[0]?.message.content ??
+            "I can help qualify your project and point you toward the right Elevate Systems service."
+        )
     });
   } catch {
     return NextResponse.json(
