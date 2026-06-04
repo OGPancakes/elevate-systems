@@ -1,6 +1,6 @@
 # Elevate Systems
 
-Premium AI automation and custom website agency site built with Next.js 15, TypeScript, Tailwind CSS, and shadcn-style components.
+Premium Next.js website for Elevate Systems with AI chat, AI website audit lead capture, and booking flow.
 
 ## Local Development
 
@@ -11,6 +11,15 @@ npm run dev
 
 Open http://127.0.0.1:3000.
 
-## Environment Variables
+## Lead Capture Setup
 
-Copy `.env.example` to `.env.local` and fill in the values needed for OpenAI, HubSpot, Make.com, site URL, and booking URL.
+The website audit and booking forms work best with these Vercel environment variables:
+
+- `OPENAI_API_KEY` for AI-generated website audits.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` for storing leads in Supabase.
+- `SUPABASE_LOGO_BUCKET` for optional logo uploads. Default: `lead-assets`.
+- `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `LEAD_NOTIFICATION_EMAIL` for email notifications.
+- `MAKE_WEBHOOK_URL` as an optional automation webhook.
+- `NEXT_PUBLIC_MICROSOFT_BOOKINGS_URL` for the embedded booking calendar on `/book`.
+
+Run `supabase-schema.sql` in Supabase SQL Editor to create the lead tables and private logo bucket.
