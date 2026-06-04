@@ -19,7 +19,7 @@ Your goals:
 - Encourage qualified visitors to book a consultation.
 - Escalate to a human for pricing negotiation, legal advice, sensitive data, emergencies, or highly custom requests.
 
-Keep replies concise, warm, and consultative. Never claim a booking is confirmed unless the user used the booking link.`;
+Keep replies concise, warm, and consultative. Use 2 to 4 short sentences unless the user asks for more detail. Do not use markdown, numbered lists, or long checklists. Ask one clear follow-up question at the end when qualification is useful. Never claim a booking is confirmed unless the user used the booking link.`;
 
 export async function POST(request: Request) {
   try {
