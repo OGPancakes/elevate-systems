@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 220 42% 4%;
+  --foreground: 210 40% 98%;
+  --muted: 219 24% 13%;
+  --muted-foreground: 215 18% 72%;
+  --border: 214 26% 17%;
+  --input: 214 26% 17%;
+  --ring: 202 100% 66%;
+  --primary: 207 100% 53%;
+  --primary-foreground: 210 40% 98%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 15% 5%, rgba(16, 112, 255, 0.18), transparent 28rem),
+    radial-gradient(circle at 85% 12%, rgba(56, 189, 248, 0.12), transparent 24rem),
+    #030711;
+  color: hsl(var(--foreground));
+}
+
+::selection {
+  background: rgba(38, 164, 255, 0.35);
+}
+
+.glass {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(22px);
+}
+
+.section-pad {
+  padding: 5.5rem 0;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.dashboard-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+@media (max-width: 768px) {
+  .section-pad {
+    padding: 4rem 0;
+  }
+}
