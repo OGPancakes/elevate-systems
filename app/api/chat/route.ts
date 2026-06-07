@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
+import { upsertRecord } from "@/lib/supabase-admin";
+
 type IncomingMessage = {
   role: "assistant" | "user";
   content: string;
@@ -25,7 +27,7 @@ function cleanReply(content: string) {
   const plain = content
     .replace(/\*\*(.*?)\*\*/g, "$1")
     .replace(/^\s*[-*]\s+/gm, "")
-    .replace(/^\s*\d+\.\s*/gm, "")
+    .replace(/^\s*\d+\.\s+/gm, "")
     .replace(/\s*\n+\s*/g, " ")
     .replace(/\s{2,}/g, " ")
     .trim();
@@ -37,8 +39,12 @@ function cleanReply(content: string) {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { messages?: IncomingMessage[] };
+    const body = (await request.json()) as {
+      messages?: IncomingMessage[];
+      sessionId?: string;
+    };
     const messages = Array.isArray(body.messages) ? body.messages.slice(-12) : [];
+    const sessionId = String(body.sessionId ?? "").slice(0, 100);
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({
@@ -61,13 +67,24 @@ export async function POST(request: Request) {
       ]
     });
 
-    return NextResponse.json({
-      message:
-        cleanReply(
+    const message = cleanReply(
           completion.choices[0]?.message.content ??
             "I can help qualify your project and point you toward the right Elevate Systems service."
-        )
-    });
+        );
+    const conversation = [...messages, { role: "assistant" as const, content: message }];
+    if (sessionId) {
+      await upsertRecord(
+        "bot_conversations",
+        {
+          session_id: sessionId,
+          messages: conversation,
+          updated_at: new Date().toISOString()
+        },
+        "session_id"
+      ).catch(() => undefined);
+    }
+
+    return NextResponse.json({ message });
   } catch {
     return NextResponse.json(
       {

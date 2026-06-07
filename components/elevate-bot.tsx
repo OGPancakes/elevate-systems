@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Bot, Loader2, Send, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,14 @@ export function ElevateBot() {
   const [messages, setMessages] = useState<ChatMessage[]>(starterMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState("");
+
+  useEffect(() => {
+    const existing = window.sessionStorage.getItem("elevate_session_id");
+    const next = existing || crypto.randomUUID();
+    window.sessionStorage.setItem("elevate_session_id", next);
+    setSessionId(next);
+  }, []);
 
   async function submitMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,7 +54,7 @@ export function ElevateBot() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages })
+        body: JSON.stringify({ messages: nextMessages, sessionId })
       });
       const data = (await response.json()) as { message?: string };
       setMessages((current) => [

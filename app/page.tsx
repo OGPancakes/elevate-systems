@@ -155,6 +155,7 @@ export default function Home() {
             </p>
           </div>
           <form className="glass rounded-2xl p-5 sm:p-6" action="/api/leads" method="post">
+            <input className="hidden" name="website" tabIndex={-1} type="text" />
             <div className="grid gap-4 sm:grid-cols-2">
               {[
                 ["name", "Name"],
@@ -167,12 +168,26 @@ export default function Home() {
                   <input
                     className="w-full rounded-md border border-white/10 bg-black/30 px-3 py-3 text-white outline-none ring-sky-300/40 placeholder:text-white/40 focus:ring-2"
                     name={name}
-                    required={name !== "phone"}
+                    required={name !== "phone" && name !== "company"}
                     type={name === "email" ? "email" : "text"}
                   />
                 </label>
               ))}
             </div>
+            <label className="mt-4 block space-y-2">
+              <span className="text-sm font-medium text-white/70">Service interested in</span>
+              <select
+                className="w-full rounded-md border border-white/10 bg-[#07101e] px-3 py-3 text-white outline-none ring-sky-300/40 focus:ring-2"
+                name="serviceInterest"
+              >
+                <option>AI Automation</option>
+                <option>Custom Website</option>
+                <option>CRM Setup</option>
+                <option>Lead Capture System</option>
+                <option>AI Chatbot</option>
+                <option>Workflow Automation</option>
+              </select>
+            </label>
             <label className="mt-4 block space-y-2">
               <span className="text-sm font-medium text-white/70">What would you like to improve?</span>
               <textarea

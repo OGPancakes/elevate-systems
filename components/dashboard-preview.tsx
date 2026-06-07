@@ -56,7 +56,7 @@ export function DashboardPreview() {
         </div>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
-          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm font-semibold text-white">Lead flow</p>
               <TrendingUp className="h-4 w-4 text-sky-300" />
@@ -83,7 +83,7 @@ export function DashboardPreview() {
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-sky-300/20 bg-sky-300/10 text-[11px] text-sky-200">
                     {index + 1}
                   </span>
-                  <span className="text-xs text-white/70">{item}</span>
+            <span className="text-xs text-white/70">{item}</span>
                 </div>
               ))}
             </div>

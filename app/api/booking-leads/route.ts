@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { insertRecord } from "@/lib/supabase-admin";
+
 type BookingLead = {
   name: string;
   email: string;
@@ -7,6 +9,8 @@ type BookingLead = {
   businessName: string;
   websiteUrl?: string;
   message: string;
+  selectedDateTime?: string;
+  serviceInterest?: string;
   submittedAt: string;
 };
 
@@ -70,23 +74,56 @@ async function saveToSupabase(lead: BookingLead) {
   });
 }
 
+async function saveBooking(lead: BookingLead) {
+  await insertRecord("bookings", {
+    name: lead.name,
+    email: lead.email,
+    phone: lead.phone || null,
+    business_name: lead.businessName,
+    website_url: lead.websiteUrl || null,
+    selected_datetime: lead.selectedDateTime || null,
+    reason: lead.message,
+    service_interest: lead.serviceInterest || null,
+    source: "Book a Call",
+    status: "Upcoming",
+    booked_at: lead.submittedAt
+  });
+}
+
 export async function POST(request: Request) {
   const formData = await request.formData();
+  if (String(formData.get("website") ?? "")) {
+    return NextResponse.redirect(new URL("/book?submitted=true", request.url), { status: 303 });
+  }
   const lead: BookingLead = {
     name: String(formData.get("name") ?? "").trim(),
     email: String(formData.get("email") ?? "").trim(),
     phone: String(formData.get("phone") ?? "").trim(),
     businessName: String(formData.get("businessName") ?? "").trim(),
     websiteUrl: String(formData.get("websiteUrl") ?? "").trim(),
-    message: String(formData.get("message") ?? "").trim(),
+    message: String(formData.get("message") ?? "").trim().slice(0, 5000),
+    selectedDateTime: String(formData.get("selectedDateTime") ?? "").trim(),
+    serviceInterest: String(formData.get("serviceInterest") ?? "").trim(),
     submittedAt: new Date().toISOString()
   };
 
-  if (!lead.name || !lead.email || !lead.businessName || !lead.message) {
+  if (
+    !lead.name ||
+    !lead.email ||
+    !lead.phone ||
+    !lead.businessName ||
+    !lead.selectedDateTime ||
+    !lead.message
+  ) {
     return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
   }
 
-  await Promise.allSettled([sendToMake(lead), sendNotification(lead), saveToSupabase(lead)]);
+  await Promise.allSettled([
+    saveBooking(lead),
+    sendToMake(lead),
+    sendNotification(lead),
+    saveToSupabase(lead)
+  ]);
 
   const redirectUrl = new URL("/book", request.url);
   redirectUrl.searchParams.set("submitted", "true");

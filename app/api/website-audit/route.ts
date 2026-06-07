@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
+import { insertRecord, updateRecordBy } from "@/lib/supabase-admin";
+
 type AuditResult = {
   summary: string;
   strengths: string[];
@@ -10,14 +12,35 @@ type AuditResult = {
   cta: string;
 };
 
+type RedesignPreview = {
+  businessName: string;
+  eyebrow: string;
+  headline: string;
+  subheadline: string;
+  primaryCta: string;
+  secondaryCta: string;
+  trustPoints: string[];
+  services: string[];
+  markers: Array<{
+    title: string;
+    description: string;
+    x: number;
+    y: number;
+  }>;
+  screenshotUrl: string;
+};
+
 type AuditLead = {
   name: string;
   businessName: string;
   email: string;
+  phone?: string;
   websiteUrl: string;
   logoUrl?: string;
   logoStoragePath?: string;
   audit: AuditResult;
+  redesign: RedesignPreview;
+  sessionId?: string;
   submittedAt: string;
   websiteSnapshot: string;
 };
@@ -152,6 +175,52 @@ ${lead.websiteSnapshot}`
   }
 }
 
+function generateRedesign(
+  businessName: string,
+  websiteUrl: string,
+  audit: AuditResult
+): RedesignPreview {
+  return {
+    businessName,
+    eyebrow: "Trusted local service professionals",
+    headline: `${businessName}, presented with clarity and confidence.`,
+    subheadline:
+      audit.improvements[0] ||
+      "A conversion-focused website experience built to turn visitors into qualified customers.",
+    primaryCta: "Request a Consultation",
+    secondaryCta: "Explore Services",
+    trustPoints: ["Fast response", "Clear next steps", "Built for mobile"],
+    services: audit.howElevateHelps.slice(0, 3),
+    screenshotUrl: `https://image.thum.io/get/width/1200/crop/800/noanimate/${websiteUrl}`,
+    markers: [
+      {
+        title: "Better Hero Section",
+        description: "A clear offer helps visitors understand the business within seconds.",
+        x: 28,
+        y: 30
+      },
+      {
+        title: "Stronger Call To Action",
+        description: "The primary action is visible immediately and repeated at the right moments.",
+        x: 52,
+        y: 57
+      },
+      {
+        title: "More Trust Signals",
+        description: "Credibility cues reduce hesitation before a visitor reaches out.",
+        x: 75,
+        y: 35
+      },
+      {
+        title: "Better Lead Capture",
+        description: "The redesign gives prospects an obvious, low-friction path to contact the team.",
+        x: 83,
+        y: 72
+      }
+    ]
+  };
+}
+
 async function uploadLogo(file: File | null, email: string) {
   if (!file || file.size === 0) return "";
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return "";
@@ -203,6 +272,34 @@ async function saveToSupabase(lead: AuditLead) {
   return rows[0]?.id ?? "";
 }
 
+async function saveUnifiedLead(lead: AuditLead) {
+  try {
+    const record = await insertRecord<{ id: string }>("leads", {
+      name: lead.name,
+      business_name: lead.businessName,
+      email: lead.email,
+      phone: lead.phone || null,
+      website_url: lead.websiteUrl,
+      logo_url: lead.logoUrl || null,
+      logo_storage_path: lead.logoStoragePath || null,
+      audit_result: lead.audit,
+      redesign_preview: lead.redesign,
+      website_snapshot: lead.websiteSnapshot,
+      source: "Audit Tool",
+      status: "New",
+      submitted_at: lead.submittedAt
+    });
+    if (record?.id && lead.sessionId) {
+      await updateRecordBy("bot_conversations", "session_id", lead.sessionId, { lead_id: record.id }).catch(
+        () => undefined
+      );
+    }
+    return record?.id ?? "";
+  } catch {
+    return "";
+  }
+}
+
 async function sendNotification(lead: AuditLead) {
   const recipients = process.env.LEAD_NOTIFICATION_EMAIL;
   if (!process.env.RESEND_API_KEY || !recipients) return;
@@ -247,9 +344,11 @@ export async function POST(request: Request) {
     const name = String(formData.get("name") ?? "").trim();
     const businessName = String(formData.get("businessName") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
+    const phone = String(formData.get("phone") ?? "").trim();
     const websiteUrl = normalizeUrl(String(formData.get("websiteUrl") ?? ""));
     const logoUrl = normalizeUrl(String(formData.get("logoUrl") ?? ""));
     const logo = formData.get("logo");
+    const sessionId = String(formData.get("sessionId") ?? "").trim();
 
     if (!name || !businessName || !email || !websiteUrl) {
       return NextResponse.json({ error: "Name, business, email, and website URL are required." }, { status: 400 });
@@ -257,27 +356,32 @@ export async function POST(request: Request) {
 
     const websiteSnapshot = await fetchWebsiteSnapshot(websiteUrl);
     const audit = await generateAudit({ businessName, websiteUrl, websiteSnapshot });
+    const redesign = generateRedesign(businessName, websiteUrl, audit);
     const submittedAt = new Date().toISOString();
     const logoStoragePath = await uploadLogo(logo instanceof File ? logo : null, email);
     const lead: AuditLead = {
       name,
       businessName,
       email,
+      phone,
       websiteUrl,
       logoUrl,
       logoStoragePath,
       audit,
+      redesign,
+      sessionId,
       submittedAt,
       websiteSnapshot
     };
 
     const [leadId] = await Promise.all([
+      saveUnifiedLead(lead),
       saveToSupabase(lead),
       sendNotification(lead),
       sendToMake(lead)
     ]);
 
-    return NextResponse.json({ audit, leadId });
+    return NextResponse.json({ audit, redesign, leadId });
   } catch {
     return NextResponse.json(
       { error: "The audit could not be generated right now. Please try again in a moment." },

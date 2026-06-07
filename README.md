@@ -2,15 +2,6 @@
 
 Premium Next.js website for Elevate Systems with AI chat, AI website audit lead capture, and booking flow.
 
-## Local Development
-
-```bash
-npm install
-npm run dev
-```
-
-Open http://127.0.0.1:3000.
-
 ## Lead Capture Setup
 
 The website audit and booking forms work best with these Vercel environment variables:

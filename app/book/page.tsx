@@ -122,6 +122,7 @@ export default async function BookPage({
           </div>
 
           <form className="glass rounded-2xl p-5 sm:p-6" action="/api/booking-leads" method="post">
+            <input className="hidden" name="website" tabIndex={-1} type="text" />
             <div className="mb-5">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-300">
                 Contact fallback
@@ -148,11 +149,35 @@ export default async function BookPage({
                   <input
                     className="w-full rounded-md border border-white/10 bg-black/30 px-3 py-3 text-white outline-none ring-sky-300/40 placeholder:text-white/40 focus:ring-2"
                     name={name}
-                    required={name !== "phone" && name !== "websiteUrl"}
+                    required={name !== "websiteUrl"}
                     type={type}
                   />
                 </label>
               ))}
+            </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <label className="space-y-2">
+                <span className="text-sm font-medium text-white/70">Preferred date and time</span>
+                <input
+                  className="w-full rounded-md border border-white/10 bg-black/30 px-3 py-3 text-white outline-none ring-sky-300/40 focus:ring-2"
+                  name="selectedDateTime"
+                  required
+                  type="datetime-local"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm font-medium text-white/70">Service interested in</span>
+                <select
+                  className="w-full rounded-md border border-white/10 bg-[#07101e] px-3 py-3 text-white outline-none ring-sky-300/40 focus:ring-2"
+                  name="serviceInterest"
+                >
+                  <option>AI Automation</option>
+                  <option>Custom Website</option>
+                  <option>Website + Automation</option>
+                  <option>CRM and Lead Capture</option>
+                  <option>AI Chatbot</option>
+                </select>
+              </label>
             </div>
             <label className="mt-4 block space-y-2">
               <span className="text-sm font-medium text-white/70">What should we look at?</span>

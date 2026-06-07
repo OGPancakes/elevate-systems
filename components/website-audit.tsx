@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Building2,
@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   Loader2,
   Mail,
+  MousePointer2,
   ScanSearch,
   Sparkles,
   Upload
@@ -28,7 +29,26 @@ type AuditResult = {
 
 type AuditResponse = {
   audit: AuditResult;
+  redesign: RedesignPreview;
   leadId?: string;
+};
+
+type RedesignPreview = {
+  businessName: string;
+  eyebrow: string;
+  headline: string;
+  subheadline: string;
+  primaryCta: string;
+  secondaryCta: string;
+  trustPoints: string[];
+  services: string[];
+  markers: Array<{
+    title: string;
+    description: string;
+    x: number;
+    y: number;
+  }>;
+  screenshotUrl: string;
 };
 
 const fallbackAudit: AuditResult = {
@@ -51,6 +71,17 @@ export function WebsiteAudit() {
   const [result, setResult] = useState<AuditResult | null>(null);
   const [businessName, setBusinessName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const [redesign, setRedesign] = useState<RedesignPreview | null>(null);
+  const [slider, setSlider] = useState(48);
+  const [activeMarker, setActiveMarker] = useState(0);
+  const [sessionId, setSessionId] = useState("");
+
+  useEffect(() => {
+    const existing = window.sessionStorage.getItem("elevate_session_id");
+    const next = existing || crypto.randomUUID();
+    window.sessionStorage.setItem("elevate_session_id", next);
+    setSessionId(next);
+  }, []);
 
   const headline = useMemo(() => {
     if (!businessName.trim()) return "Let's upgrade your website.";
@@ -62,9 +93,11 @@ export function WebsiteAudit() {
     setLoading(true);
     setError("");
     setResult(null);
+    setRedesign(null);
 
     try {
       const formData = new FormData(event.currentTarget);
+      formData.set("sessionId", sessionId);
       const response = await fetch("/api/website-audit", {
         method: "POST",
         body: formData
@@ -76,6 +109,7 @@ export function WebsiteAudit() {
       }
 
       setResult(data.audit ?? fallbackAudit);
+      setRedesign(data.redesign ?? null);
     } catch (auditError) {
       setError(
         auditError instanceof Error
@@ -104,7 +138,7 @@ export function WebsiteAudit() {
         </p>
       </div>
 
-      <div className="glass grid overflow-hidden rounded-2xl lg:grid-cols-[0.92fr_1.08fr]">
+      <div className="glass grid overflow-hidden rounded-lg lg:grid-cols-[0.92fr_1.08fr]">
         <form className="space-y-4 border-b border-white/10 p-5 sm:p-7 lg:border-b-0 lg:border-r" onSubmit={submitAudit}>
           <div className="rounded-xl border border-sky-300/20 bg-sky-300/10 p-4">
             <div className="flex items-center gap-3">
@@ -163,19 +197,32 @@ export function WebsiteAudit() {
             </div>
           </label>
 
-          <label className="space-y-2 block">
-            <span className="text-sm font-medium text-white/70">Email</span>
-            <div className="flex items-center gap-2 rounded-md border border-white/10 bg-black/30 px-3 py-3 ring-sky-300/40 focus-within:ring-2">
-              <Mail className="h-4 w-4 text-white/40" />
-              <input
-                className="min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-white/35"
-                name="email"
-                placeholder="owner@example.com"
-                required
-                type="email"
-              />
-            </div>
-          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-white/70">Email</span>
+              <div className="flex items-center gap-2 rounded-md border border-white/10 bg-black/30 px-3 py-3 ring-sky-300/40 focus-within:ring-2">
+                <Mail className="h-4 w-4 text-white/40" />
+                <input
+                  className="min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-white/35"
+                  name="email"
+                  placeholder="owner@example.com"
+                  required
+                  type="email"
+                />
+              </div>
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-white/70">Phone</span>
+              <div className="flex items-center gap-2 rounded-md border border-white/10 bg-black/30 px-3 py-3 ring-sky-300/40 focus-within:ring-2">
+                <input
+                  className="min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-white/35"
+                  name="phone"
+                  placeholder="Optional"
+                  type="tel"
+                />
+              </div>
+            </label>
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-2">
@@ -282,6 +329,118 @@ export function WebsiteAudit() {
           </div>
         </div>
       </div>
+
+      {redesign ? (
+        <section className="mt-8 overflow-hidden rounded-lg border border-white/10 bg-white/[0.035]">
+          <div className="flex flex-col justify-between gap-4 border-b border-white/10 p-5 sm:flex-row sm:items-end sm:p-7">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-300">
+                Visual transformation
+              </p>
+              <h3 className="mt-2 text-3xl font-semibold text-white">
+                See what {redesign.businessName} could become.
+              </h3>
+            </div>
+            <p className="flex items-center gap-2 text-sm text-white/45">
+              <MousePointer2 className="h-4 w-4 text-sky-300" />
+              Drag to compare
+            </p>
+          </div>
+
+          <div className="relative aspect-[16/9] min-h-[440px] overflow-hidden bg-[#07101c]">
+            <div className="absolute inset-0">
+              <div className="absolute inset-0 bg-[linear-gradient(120deg,#071426,#09223a)] p-6 sm:p-10">
+                <div className="mx-auto flex h-full max-w-5xl flex-col rounded-md border border-white/10 bg-[#07101c] shadow-2xl">
+                  <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+                    <strong className="text-sm tracking-[0.12em] text-white">{redesign.businessName}</strong>
+                    <div className="hidden gap-5 text-xs text-white/45 sm:flex">
+                      <span>Services</span><span>About</span><span>Reviews</span>
+                    </div>
+                    <span className="rounded-md bg-sky-400 px-3 py-2 text-xs font-semibold text-slate-950">
+                      {redesign.primaryCta}
+                    </span>
+                  </div>
+                  <div className="grid flex-1 items-center gap-8 p-6 sm:grid-cols-[1.1fr_0.9fr] sm:p-10">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">{redesign.eyebrow}</p>
+                      <h4 className="mt-4 max-w-xl text-3xl font-semibold leading-tight text-white sm:text-5xl">{redesign.headline}</h4>
+                      <p className="mt-4 max-w-lg leading-7 text-white/55">{redesign.subheadline}</p>
+                      <div className="mt-6 flex flex-wrap gap-3">
+                        <span className="rounded-md bg-sky-400 px-4 py-3 text-sm font-semibold text-slate-950">{redesign.primaryCta}</span>
+                        <span className="rounded-md border border-white/15 px-4 py-3 text-sm text-white/70">{redesign.secondaryCta}</span>
+                      </div>
+                      <div className="mt-7 flex flex-wrap gap-4 text-xs text-white/45">
+                        {redesign.trustPoints.map((point) => <span key={point}>✓ {point}</span>)}
+                      </div>
+                    </div>
+                    <div className="grid gap-3">
+                      {redesign.services.map((service, index) => (
+                        <div className="rounded-md border border-white/10 bg-white/[0.055] p-4" key={service}>
+                          <span className="text-xs text-sky-300">0{index + 1}</span>
+                          <p className="mt-2 text-sm leading-6 text-white/70">{service}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {redesign.markers.map((marker, index) => (
+                <button
+                  aria-label={marker.title}
+                  className={`absolute z-50 flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold shadow-lg transition ${activeMarker === index ? "scale-110 border-white bg-sky-400 text-slate-950" : "border-sky-200 bg-slate-950 text-sky-200"}`}
+                  key={marker.title}
+                  onClick={() => setActiveMarker(index)}
+                  style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
+                  type="button"
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+
+            <div
+              className="absolute inset-0 overflow-hidden bg-slate-900"
+              style={{ clipPath: `inset(0 ${100 - slider}% 0 0)` }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                alt={`Current ${redesign.businessName} website`}
+                className="h-full w-full object-cover object-top"
+                src={redesign.screenshotUrl}
+              />
+              <div className="absolute inset-0 bg-black/10" />
+            </div>
+
+            <div className="pointer-events-none absolute inset-y-0 z-30 w-0.5 bg-white" style={{ left: `${slider}%` }}>
+              <div className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-sky-400 text-slate-950 shadow-xl">
+                ↔
+              </div>
+            </div>
+            <span className="absolute left-4 top-4 z-40 rounded-md bg-black/75 px-3 py-1.5 text-xs font-semibold text-white">BEFORE</span>
+            <span className="absolute right-4 top-4 z-40 rounded-md bg-sky-400 px-3 py-1.5 text-xs font-semibold text-slate-950">AFTER</span>
+            <input
+              aria-label="Compare current and redesigned website"
+              className="absolute inset-0 z-40 h-full w-full cursor-ew-resize opacity-0"
+              max="100"
+              min="0"
+              onChange={(event) => setSlider(Number(event.target.value))}
+              type="range"
+              value={slider}
+            />
+          </div>
+
+          <div className="grid gap-4 border-t border-white/10 p-5 sm:grid-cols-[0.72fr_1.28fr] sm:p-7">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
+                Improvement marker {activeMarker + 1}
+              </p>
+              <h4 className="mt-2 text-xl font-semibold text-white">{redesign.markers[activeMarker]?.title}</h4>
+            </div>
+            <p className="leading-7 text-white/60">{redesign.markers[activeMarker]?.description}</p>
+          </div>
+        </section>
+      ) : null}
     </section>
   );
 }
