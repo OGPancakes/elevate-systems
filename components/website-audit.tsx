@@ -49,6 +49,9 @@ type RedesignPreview = {
     y: number;
   }>;
   screenshotUrl: string;
+  generatedImageUrl?: string;
+  qualityScore?: number;
+  generationMode?: "ai-image" | "fallback";
 };
 
 const fallbackAudit: AuditResult = {
@@ -349,6 +352,17 @@ export function WebsiteAudit() {
 
           <div className="relative aspect-[16/9] min-h-[440px] overflow-hidden bg-[#07101c]">
             <div className="absolute inset-0">
+              {redesign.generatedImageUrl ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt={`Premium redesign concept for ${redesign.businessName}`}
+                    className="absolute inset-0 h-full w-full object-cover object-top"
+                    src={redesign.generatedImageUrl}
+                  />
+                  <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/35 to-transparent" />
+                </>
+              ) : (
               <div className="absolute inset-0 bg-[linear-gradient(120deg,#071426,#09223a)] p-6 sm:p-10">
                 <div className="mx-auto flex h-full max-w-5xl flex-col rounded-md border border-white/10 bg-[#07101c] shadow-2xl">
                   <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
@@ -384,19 +398,25 @@ export function WebsiteAudit() {
                   </div>
                 </div>
               </div>
+              )}
 
-              {redesign.markers.map((marker, index) => (
-                <button
-                  aria-label={marker.title}
-                  className={`absolute z-50 flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold shadow-lg transition ${activeMarker === index ? "scale-110 border-white bg-sky-400 text-slate-950" : "border-sky-200 bg-slate-950 text-sky-200"}`}
-                  key={marker.title}
-                  onClick={() => setActiveMarker(index)}
-                  style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
-                  type="button"
-                >
-                  {index + 1}
-                </button>
-              ))}
+              <div
+                className="pointer-events-none absolute inset-0 z-50 overflow-hidden"
+                style={{ clipPath: `inset(0 0 0 ${slider}%)` }}
+              >
+                {redesign.markers.map((marker, index) => (
+                  <button
+                    aria-label={marker.title}
+                    className={`pointer-events-auto absolute flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold shadow-lg transition ${activeMarker === index ? "scale-110 border-white bg-sky-400 text-slate-950" : "border-sky-200 bg-slate-950 text-sky-200"}`}
+                    key={marker.title}
+                    onClick={() => setActiveMarker(index)}
+                    style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
+                    type="button"
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div

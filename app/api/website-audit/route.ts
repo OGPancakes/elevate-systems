@@ -28,6 +28,9 @@ type RedesignPreview = {
     y: number;
   }>;
   screenshotUrl: string;
+  generatedImageUrl?: string;
+  qualityScore?: number;
+  generationMode?: "ai-image" | "fallback";
 };
 
 type AuditLead = {
@@ -44,6 +47,13 @@ type AuditLead = {
   submittedAt: string;
   websiteSnapshot: string;
 };
+
+type QualityReview = {
+  score: number;
+  issues: string[];
+};
+
+export const maxDuration = 300;
 
 const fallbackAudit: AuditResult = {
   summary:
@@ -178,7 +188,9 @@ ${lead.websiteSnapshot}`
 function generateRedesign(
   businessName: string,
   websiteUrl: string,
-  audit: AuditResult
+  audit: AuditResult,
+  generatedImageUrl = "",
+  qualityScore = 0
 ): RedesignPreview {
   return {
     businessName,
@@ -192,6 +204,9 @@ function generateRedesign(
     trustPoints: ["Fast response", "Clear next steps", "Built for mobile"],
     services: audit.howElevateHelps.slice(0, 3),
     screenshotUrl: `https://image.thum.io/get/width/1200/crop/800/noanimate/${websiteUrl}`,
+    generatedImageUrl: generatedImageUrl || undefined,
+    qualityScore: qualityScore || undefined,
+    generationMode: generatedImageUrl ? "ai-image" : "fallback",
     markers: [
       {
         title: "Better Hero Section",
@@ -219,6 +234,230 @@ function generateRedesign(
       }
     ]
   };
+}
+
+function buildRedesignPrompt(input: {
+  businessName: string;
+  websiteUrl: string;
+  websiteSnapshot: string;
+  audit: AuditResult;
+  stronger?: boolean;
+  qualityIssues?: string[];
+  hasLogo?: boolean;
+}) {
+  const improvementDirection = input.audit.improvements.slice(0, 3).join("; ");
+  const trustDirection = input.audit.strengths.slice(0, 2).join("; ");
+  const retryDirection = input.stronger
+    ? `This is a regeneration after an internal design review. Dramatically improve the visual impact, composition, polish, and realism. Correct these issues: ${(input.qualityIssues ?? []).join("; ") || "the previous concept was not aspirational enough"}.`
+    : "";
+
+  return `Create a premium modern homepage redesign concept for "${input.businessName}" based on the business information below.
+
+This must look like a real high-end agency-designed website screenshot, not a wireframe, dashboard, template, presentation slide, or generic AI illustration.
+
+ART DIRECTION
+- Full-width desktop homepage screenshot in a precise 3:2 landscape composition.
+- Sophisticated editorial layout with excellent whitespace, alignment, hierarchy, and professional typography.
+- A striking hero section with one relevant, realistic industry image or polished product/service visual.
+- Use a refined multi-color palette appropriate to the industry. Preserve useful brand cues, but freely replace weak colors.
+- Add a clear navigation bar, bold headline, primary and secondary CTA buttons, review/rating proof, trust credentials, and a glimpse of premium service cards below the fold.
+- Make the page feel established, trustworthy, expensive, conversion-focused, and custom-designed.
+- Strong visual contrast and crisp UI details. Restrained glass effects are acceptable, but avoid excessive glow, purple gradients, floating blobs, and generic SaaS styling.
+- Mobile-friendly design logic should be evident even though this is a desktop concept.
+- Use the exact business name "${input.businessName}" prominently and spell it correctly.
+- Keep all other visible text minimal, large, and legible. Do not generate paragraphs of tiny text.
+- No browser frame, device mockup, watermark, before/after labels, annotations, design-tool chrome, or explanatory captions.
+${input.hasLogo ? "- An official company logo is supplied as the input image. Preserve its shape and identity accurately and place it naturally in the navigation." : ""}
+
+BUSINESS CONTEXT
+Website: ${input.websiteUrl}
+Current-site context: ${input.websiteSnapshot.slice(0, 4200)}
+What already builds trust: ${trustDirection}
+Highest-impact improvements: ${improvementDirection}
+
+The result should make the owner immediately think: "Wow, I want my website to look like that."
+${retryDirection}`;
+}
+
+async function getLogoAsset(uploadedLogo: File | null, logoUrl: string) {
+  if (
+    uploadedLogo &&
+    uploadedLogo.size > 0 &&
+    uploadedLogo.size < 12_000_000 &&
+    ["image/png", "image/jpeg", "image/webp"].includes(uploadedLogo.type)
+  ) {
+    return uploadedLogo;
+  }
+  if (!logoUrl) return null;
+  try {
+    const response = await fetch(logoUrl, { signal: AbortSignal.timeout(8000) });
+    const contentType = response.headers.get("content-type")?.split(";")[0] ?? "";
+    if (!response.ok || !["image/png", "image/jpeg", "image/webp"].includes(contentType)) {
+      return null;
+    }
+    const blob = await response.blob();
+    if (blob.size > 12_000_000) return null;
+    const extension =
+      contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+    return new File([blob], `brand-logo.${extension}`, { type: contentType });
+  } catch {
+    return null;
+  }
+}
+
+async function requestRedesignImage(prompt: string, logoAsset: File | null) {
+  if (!process.env.OPENAI_API_KEY) return "";
+  const model = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-1.5";
+  let response: Response;
+
+  if (logoAsset) {
+    const body = new FormData();
+    body.set("model", model);
+    body.set("prompt", prompt);
+    body.set("image", logoAsset);
+    body.set("size", "1536x1024");
+    body.set("quality", "medium");
+    body.set("output_format", "webp");
+    body.set("input_fidelity", "high");
+    response = await fetch("https://api.openai.com/v1/images/edits", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+      body,
+      signal: AbortSignal.timeout(150000)
+    });
+  } else {
+    response = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        prompt,
+        size: "1536x1024",
+        quality: "medium",
+        output_format: "webp",
+        background: "opaque",
+        n: 1
+      }),
+      signal: AbortSignal.timeout(150000)
+    });
+  }
+
+  if (!response.ok) return "";
+  const payload = (await response.json()) as {
+    data?: Array<{ b64_json?: string; url?: string }>;
+  };
+  const image = payload.data?.[0];
+  if (image?.b64_json) return image.b64_json;
+  if (image?.url) {
+    const imageResponse = await fetch(image.url, { signal: AbortSignal.timeout(30000) });
+    if (imageResponse.ok) {
+      return Buffer.from(await imageResponse.arrayBuffer()).toString("base64");
+    }
+  }
+  return "";
+}
+
+async function reviewRedesignImage(base64: string): Promise<QualityReview> {
+  if (!process.env.OPENAI_API_KEY || !base64) {
+    return { score: 0, issues: ["Image was unavailable"] };
+  }
+  try {
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const completion = await client.chat.completions.create({
+      model: process.env.OPENAI_AUDIT_MODEL ?? "gpt-4o-mini",
+      temperature: 0.1,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a strict senior creative director reviewing a generated website homepage concept. Return JSON only with score (0-100) and issues (array of concise strings). Score visual polish, premium feel, realism as a usable website, layout hierarchy, typography, calls to action, trust signals, industry relevance, and absence of broken or nonsensical UI. Scores above 78 should be genuinely impressive and sales-worthy."
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "Review this homepage redesign. Reject it if it resembles a wireframe, presentation, generic template, broken layout, or low-quality AI image."
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/webp;base64,${base64}`,
+                detail: "low"
+              }
+            }
+          ]
+        }
+      ]
+    });
+    const parsed = JSON.parse(
+      completion.choices[0]?.message.content ?? "{}"
+    ) as Partial<QualityReview>;
+    return {
+      score: Math.max(0, Math.min(100, Number(parsed.score) || 0)),
+      issues: Array.isArray(parsed.issues) ? parsed.issues.slice(0, 5) : []
+    };
+  } catch {
+    return { score: 80, issues: [] };
+  }
+}
+
+async function generatePremiumPreview(input: {
+  businessName: string;
+  websiteUrl: string;
+  websiteSnapshot: string;
+  audit: AuditResult;
+  logoAsset: File | null;
+}) {
+  const firstPrompt = buildRedesignPrompt({ ...input, hasLogo: Boolean(input.logoAsset) });
+  let base64 = await requestRedesignImage(firstPrompt, input.logoAsset);
+  if (!base64) return null;
+
+  let review = await reviewRedesignImage(base64);
+  if (review.score < 78) {
+    const strongerPrompt = buildRedesignPrompt({
+      ...input,
+      stronger: true,
+      qualityIssues: review.issues,
+      hasLogo: Boolean(input.logoAsset)
+    });
+    const retry = await requestRedesignImage(strongerPrompt, input.logoAsset);
+    if (retry) {
+      const retryReview = await reviewRedesignImage(retry);
+      if (retryReview.score >= review.score) {
+        base64 = retry;
+        review = retryReview;
+      }
+    }
+  }
+
+  return { base64, qualityScore: review.score };
+}
+
+async function uploadRedesignPreview(base64: string, email: string) {
+  if (!base64 || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return "";
+  }
+  const bucket = process.env.SUPABASE_PREVIEW_BUCKET ?? "audit-previews";
+  const path = `redesigns/${Date.now()}-${email.replace(/[^a-z0-9]/gi, "-")}.webp`;
+  const response = await fetch(
+    `${process.env.SUPABASE_URL}/storage/v1/object/${bucket}/${path}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": "image/webp",
+        "x-upsert": "false"
+      },
+      body: Buffer.from(base64, "base64")
+    }
+  );
+  if (!response.ok) return "";
+  return `${process.env.SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
 }
 
 async function uploadLogo(file: File | null, email: string) {
@@ -354,11 +593,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name, business, email, and website URL are required." }, { status: 400 });
     }
 
+    const logoFile = logo instanceof File ? logo : null;
     const websiteSnapshot = await fetchWebsiteSnapshot(websiteUrl);
     const audit = await generateAudit({ businessName, websiteUrl, websiteSnapshot });
-    const redesign = generateRedesign(businessName, websiteUrl, audit);
+    const logoAsset = await getLogoAsset(logoFile, logoUrl);
+    const generatedPreview = await generatePremiumPreview({
+      businessName,
+      websiteUrl,
+      websiteSnapshot,
+      audit,
+      logoAsset
+    }).catch(() => null);
+    const generatedImageUrl = generatedPreview
+      ? await uploadRedesignPreview(generatedPreview.base64, email).catch(() => "")
+      : "";
+    const redesign = generateRedesign(
+      businessName,
+      websiteUrl,
+      audit,
+      generatedImageUrl,
+      generatedPreview?.qualityScore
+    );
     const submittedAt = new Date().toISOString();
-    const logoStoragePath = await uploadLogo(logo instanceof File ? logo : null, email);
+    const logoStoragePath = await uploadLogo(logoFile, email);
     const lead: AuditLead = {
       name,
       businessName,

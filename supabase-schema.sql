@@ -35,6 +35,11 @@ insert into storage.buckets (id, name, public)
 values ('lead-assets', 'lead-assets', false)
 on conflict (id) do nothing;
 
+-- Public generated concepts are displayed in the audit comparison slider.
+insert into storage.buckets (id, name, public)
+values ('audit-previews', 'audit-previews', true)
+on conflict (id) do update set public = true;
+
 create table if not exists leads (
   id uuid primary key default gen_random_uuid(),
   name text not null,
