@@ -260,12 +260,13 @@ ART DIRECTION
 - Sophisticated editorial layout with excellent whitespace, alignment, hierarchy, and professional typography.
 - A striking hero section with one relevant, realistic industry image or polished product/service visual.
 - Use a refined multi-color palette appropriate to the industry. Preserve useful brand cues, but freely replace weak colors.
-- Add a clear navigation bar, bold headline, primary and secondary CTA buttons, review/rating proof, trust credentials, and a glimpse of premium service cards below the fold.
+- Add a clear navigation bar, bold headline, primary and secondary CTA buttons, tasteful trust signals, and a glimpse of premium service cards below the fold.
 - Make the page feel established, trustworthy, expensive, conversion-focused, and custom-designed.
 - Strong visual contrast and crisp UI details. Restrained glass effects are acceptable, but avoid excessive glow, purple gradients, floating blobs, and generic SaaS styling.
 - Mobile-friendly design logic should be evident even though this is a desktop concept.
 - Use the exact business name "${input.businessName}" prominently and spell it correctly.
 - Keep all other visible text minimal, large, and legible. Do not generate paragraphs of tiny text.
+- Never invent third-party logos, certifications, awards, review counts, years in business, ratings, guarantees, or factual claims that are not present in the supplied website context. Use neutral trust language or unlabeled icon treatments instead.
 - No browser frame, device mockup, watermark, before/after labels, annotations, design-tool chrome, or explanatory captions.
 ${input.hasLogo ? "- An official company logo is supplied as the input image. Preserve its shape and identity accurately and place it naturally in the navigation." : ""}
 
@@ -374,7 +375,7 @@ async function reviewRedesignImage(base64: string): Promise<QualityReview> {
         {
           role: "system",
           content:
-            "You are a strict senior creative director reviewing a generated website homepage concept. Return JSON only with score (0-100) and issues (array of concise strings). Score visual polish, premium feel, realism as a usable website, layout hierarchy, typography, calls to action, trust signals, industry relevance, and absence of broken or nonsensical UI. Scores above 78 should be genuinely impressive and sales-worthy."
+            "You are a strict senior creative director reviewing a generated website homepage concept. Return JSON only with score (0-100) and issues (array of concise strings). Score visual polish, premium feel, realism as a usable website, layout hierarchy, typography, calls to action, trust signals, industry relevance, and absence of broken or nonsensical UI. Penalize invented third-party logos, certifications, awards, ratings, review counts, or unverifiable claims. Scores above 78 should be genuinely impressive, credible, and sales-worthy."
         },
         {
           role: "user",
