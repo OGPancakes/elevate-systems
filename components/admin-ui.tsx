@@ -12,7 +12,11 @@ export function StatusBadge({ status }: { status: string }) {
     Lost: "border-red-300/20 bg-red-300/10 text-red-200",
     Cancelled: "border-red-300/20 bg-red-300/10 text-red-200",
     "No-show": "border-orange-300/20 bg-orange-300/10 text-orange-200",
-    Spam: "border-red-300/20 bg-red-300/10 text-red-200"
+    Spam: "border-red-300/20 bg-red-300/10 text-red-200",
+    Pending: "border-amber-300/20 bg-amber-300/10 text-amber-200",
+    Paid: "border-emerald-300/20 bg-emerald-300/10 text-emerald-200",
+    Failed: "border-red-300/20 bg-red-300/10 text-red-200",
+    Refunded: "border-violet-300/20 bg-violet-300/10 text-violet-200"
   };
 
   return (

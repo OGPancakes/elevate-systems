@@ -24,12 +24,17 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
     `select=*&lead_id=eq.${encodeURIComponent(id)}&order=created_at.asc`
   ).catch(() => []);
   const audit = lead.audit_result as {
+    type?: string;
+    score?: number;
     summary?: string;
     strengths?: string[];
     weaknesses?: string[];
     improvements?: string[];
     howElevateHelps?: string[];
     cta?: string;
+    recommendedSolution?: string;
+    categories?: Array<{ label: string; score: number; insight: string }>;
+    opportunities?: Array<{ title: string; description: string; impact: string }>;
   };
 
   return (
@@ -66,7 +71,40 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
           <DetailSection title="AI audit">
             <p className="leading-7 text-white/70">{audit.summary}</p>
-            <div className="mt-6 grid gap-5 md:grid-cols-2">
+            {audit.type === "ai-opportunity-scan" ? (
+              <div className="mt-6 space-y-5">
+                <div className="flex flex-wrap gap-3">
+                  <div className="rounded-md border border-sky-300/20 bg-sky-300/10 px-4 py-3">
+                    <p className="text-xs uppercase tracking-[0.14em] text-sky-300">Opportunity score</p>
+                    <p className="mt-1 text-2xl font-semibold text-white">{audit.score ?? "—"}</p>
+                  </div>
+                  <div className="rounded-md border border-white/10 bg-black/20 px-4 py-3">
+                    <p className="text-xs uppercase tracking-[0.14em] text-white/35">Recommended</p>
+                    <p className="mt-1 font-medium text-white">{audit.recommendedSolution}</p>
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {audit.categories?.map((category) => (
+                    <div className="rounded-md border border-white/10 bg-black/20 p-4" key={category.label}>
+                      <div className="flex justify-between gap-3">
+                        <h3 className="text-sm font-semibold text-white">{category.label}</h3>
+                        <span className="text-sm font-semibold text-sky-300">{category.score}</span>
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-white/50">{category.insight}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-3">
+                  {audit.opportunities?.map((opportunity) => (
+                    <div className="border-l-2 border-sky-300/50 bg-white/[0.035] p-4" key={opportunity.title}>
+                      <p className="font-medium text-white">{opportunity.title}</p>
+                      <p className="mt-2 text-sm leading-6 text-white/50">{opportunity.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            <div className={`${audit.type === "ai-opportunity-scan" ? "hidden" : "mt-6 grid gap-5 md:grid-cols-2"}`}>
               {[
                 ["Strengths", audit.strengths],
                 ["Weaknesses", audit.weaknesses],

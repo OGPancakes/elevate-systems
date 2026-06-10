@@ -9,7 +9,7 @@ export function AdminRecordEditor({
   statuses,
   returnTo
 }: {
-  table: "leads" | "inquiries" | "bookings";
+  table: "leads" | "inquiries" | "bookings" | "purchases";
   id: string;
   status: string;
   notes: string;

@@ -13,3 +13,19 @@ The website audit and booking forms work best with these Vercel environment vari
 - `MAKE_WEBHOOK_URL` as an optional automation webhook.
 
 Run `supabase-schema.sql` in Supabase SQL Editor to create the lead tables and private logo bucket.
+
+## Stripe AI Solutions Checkout
+
+Create one-time Stripe Prices for the AI Launch and AI Growth packages, then configure:
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_AI_LAUNCH_PRICE_ID`
+- `STRIPE_AI_GROWTH_PRICE_ID`
+
+Set the Stripe webhook endpoint to:
+
+`https://elevatesystems.us/api/stripe/webhook`
+
+Subscribe it to `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+`checkout.session.async_payment_failed`, and `checkout.session.expired`.

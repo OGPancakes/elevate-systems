@@ -58,6 +58,19 @@ body {
   background-size: 34px 34px;
 }
 
+@keyframes scan-line {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(620%);
+  }
+}
+
+.animate-scan-line {
+  animation: scan-line 2.2s linear infinite;
+}
+
 @media (max-width: 768px) {
   .section-pad {
     padding: 4rem 0;

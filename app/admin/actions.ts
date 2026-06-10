@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin-auth";
 import { deleteRecord, updateRecord } from "@/lib/supabase-admin";
 
-const allowedTables = new Set(["leads", "inquiries", "bookings"]);
+const allowedTables = new Set(["leads", "inquiries", "bookings", "purchases"]);
 
 function safeTable(value: FormDataEntryValue | null) {
   const table = String(value ?? "");

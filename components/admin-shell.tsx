@@ -6,6 +6,7 @@ import {
   ExternalLink,
   Inbox,
   LogOut,
+  ReceiptText,
   Settings,
   Sparkles
 } from "lucide-react";
@@ -15,6 +16,7 @@ const navigation = [
   { label: "Leads", href: "/admin/leads", icon: Sparkles },
   { label: "Inquiries", href: "/admin/inquiries", icon: Inbox },
   { label: "Bookings", href: "/admin/bookings", icon: CalendarDays },
+  { label: "Purchases", href: "/admin/purchases", icon: ReceiptText },
   { label: "Settings", href: "/admin/settings", icon: Settings }
 ];
 
@@ -87,7 +89,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </Link>
             <p className="hidden text-sm text-white/45 lg:block">Lead operations</p>
             <nav className="flex max-w-full gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden">
-              {navigation.slice(0, 4).map((item) => (
+              {navigation.slice(0, 5).map((item) => (
                 <Link
                   className="rounded-md px-3 py-2 text-xs text-white/60 hover:bg-white/10"
                   href={item.href}

@@ -111,6 +111,25 @@ create table if not exists bot_conversations (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists purchases (
+  id uuid primary key default gen_random_uuid(),
+  customer_name text,
+  customer_email text,
+  business_name text,
+  tier_id text not null,
+  tier_name text not null,
+  amount_cents integer not null default 0,
+  currency text not null default 'usd',
+  stripe_session_id text unique,
+  stripe_payment_intent_id text,
+  source text not null default 'AI Solutions',
+  status text not null default 'Pending'
+    check (status in ('Pending', 'Paid', 'Failed', 'Refunded')),
+  notes text not null default '',
+  paid_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists leads_created_at_idx on leads (created_at desc);
 create index if not exists leads_status_idx on leads (status);
 create index if not exists leads_email_idx on leads (lower(email));
@@ -122,11 +141,15 @@ create unique index if not exists bookings_unique_upcoming_slot_idx
   on bookings (selected_datetime)
   where status = 'Upcoming' and selected_datetime is not null;
 create index if not exists bot_conversations_lead_id_idx on bot_conversations (lead_id);
+create index if not exists purchases_created_at_idx on purchases (created_at desc);
+create index if not exists purchases_status_idx on purchases (status);
+create index if not exists purchases_customer_email_idx on purchases (lower(customer_email));
 
 alter table leads enable row level security;
 alter table inquiries enable row level security;
 alter table bookings enable row level security;
 alter table bot_conversations enable row level security;
+alter table purchases enable row level security;
 
 insert into leads (
   id, name, business_name, email, website_url, logo_url, logo_storage_path,

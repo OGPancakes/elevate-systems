@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Inbox, Sparkles, TrendingUp } from "lucide-react";
+import { CalendarDays, CreditCard, Inbox, Sparkles, TrendingUp } from "lucide-react";
 
 import { EmptyState, PageHeading, StatusBadge } from "@/components/admin-ui";
 import {
@@ -48,12 +48,13 @@ async function recentActivity() {
 }
 
 export default async function AdminDashboardPage() {
-  const [totalLeads, newLeads, inquiries, bookings, upcoming, recent] = await Promise.all([
+  const [totalLeads, newLeads, inquiries, bookings, upcoming, purchases, recent] = await Promise.all([
     safeCount("leads"),
     safeCount("leads", "status=eq.New"),
     safeCount("inquiries"),
     safeCount("bookings"),
     safeCount("bookings", "status=eq.Upcoming"),
+    safeCount("purchases", "status=eq.Paid"),
     recentActivity()
   ]);
 
@@ -65,6 +66,7 @@ export default async function AdminDashboardPage() {
     { label: "Inquiries", value: inquiries, icon: Inbox },
     { label: "Bookings", value: bookings, icon: CalendarDays },
     { label: "Upcoming calls", value: upcoming, icon: CalendarDays },
+    { label: "Paid purchases", value: purchases, icon: CreditCard },
     { label: "Conversion rate", value: `${conversionRate}%`, icon: TrendingUp }
   ];
 

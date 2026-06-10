@@ -1,4 +1,4 @@
-import { CheckCircle2, Database, KeyRound, Mail } from "lucide-react";
+import { CheckCircle2, CreditCard, Database, KeyRound, Mail } from "lucide-react";
 
 import { PageHeading } from "@/components/admin-ui";
 
@@ -18,6 +18,11 @@ export default function AdminSettingsPage() {
       label: "Lead notification email",
       configured: Boolean(process.env.RESEND_API_KEY && process.env.LEAD_NOTIFICATION_EMAIL),
       icon: Mail
+    },
+    {
+      label: "Stripe checkout",
+      configured: Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET),
+      icon: CreditCard
     }
   ];
 

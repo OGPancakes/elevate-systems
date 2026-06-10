@@ -55,6 +55,7 @@ export default async function LeadsPage({
         <select className="rounded-md border border-white/10 bg-[#07101e] px-3 py-2.5 text-sm text-white" defaultValue={source} name="source">
           <option value="">All sources</option>
           <option>Audit Tool</option>
+          <option>AI Solutions</option>
           <option>Elevate Bot</option>
           <option>Contact Form</option>
           <option>Book a Call</option>

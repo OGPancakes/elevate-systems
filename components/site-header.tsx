@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
+  { label: "AI Solutions", href: "/ai-solutions" },
   { label: "Services", href: "/services" },
   { label: "Audit", href: "/audit" },
   { label: "Proof", href: "/proof" },

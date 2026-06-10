@@ -3,6 +3,7 @@ import "server-only";
 export type LeadStatus = "New" | "Contacted" | "Booked" | "Closed" | "Lost";
 export type InquiryStatus = "New" | "Contacted" | "Closed" | "Spam";
 export type BookingStatus = "Upcoming" | "Completed" | "Cancelled" | "No-show";
+export type PurchaseStatus = "Pending" | "Paid" | "Failed" | "Refunded";
 
 export type LeadRecord = {
   id: string;
@@ -68,6 +69,24 @@ export type ConversationRecord = {
   captured_business_name: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type PurchaseRecord = {
+  id: string;
+  customer_name: string | null;
+  customer_email: string | null;
+  business_name: string | null;
+  tier_id: string;
+  tier_name: string;
+  amount_cents: number;
+  currency: string;
+  stripe_session_id: string | null;
+  stripe_payment_intent_id: string | null;
+  source: string;
+  status: PurchaseStatus;
+  notes: string;
+  paid_at: string | null;
+  created_at: string;
 };
 
 function config() {
