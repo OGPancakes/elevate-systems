@@ -11,13 +11,8 @@ const workflow = [
 
 export function DashboardPreview() {
   return (
-    <div className="relative mx-auto w-full max-w-[580px] py-10">
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center [perspective:900px]">
-        <div className="flow-ring flow-ring-one absolute h-[72%] w-[88%] rounded-[50%] border border-sky-300/20" />
-        <div className="flow-ring flow-ring-two absolute h-[92%] w-[68%] rounded-[50%] border border-blue-400/15" />
-        <div className="absolute h-2/3 w-2/3 rounded-full bg-sky-500/10 blur-3xl" />
-      </div>
-      <div className="animate-float dashboard-grid relative overflow-hidden border border-white/10 bg-[#07101c]/90 shadow-glow">
+    <div className="relative mx-auto w-full max-w-[580px]">
+      <div className="dashboard-grid overflow-hidden border border-white/10 bg-[#07101c]/90">
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <div>
             <p className="text-sm font-semibold text-white">Lead response system</p>
