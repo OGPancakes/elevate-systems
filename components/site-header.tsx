@@ -7,9 +7,7 @@ import { Button } from "@/components/ui/button";
 const navItems = [
   { label: "AI Solutions", href: "/ai-solutions" },
   { label: "Services", href: "/services" },
-  { label: "Audit", href: "/audit" },
-  { label: "Proof", href: "/proof" },
-  { label: "Contact", href: "/#contact" }
+  { label: "Proof", href: "/proof" }
 ];
 
 export function SiteHeader() {

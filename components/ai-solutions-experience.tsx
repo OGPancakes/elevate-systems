@@ -7,15 +7,12 @@ import {
   BarChart3,
   Check,
   ChevronRight,
-  CircleGauge,
   Clock3,
   Globe2,
   Loader2,
   LockKeyhole,
   Mail,
   ScanSearch,
-  ShieldCheck,
-  Sparkles,
   UsersRound,
   Zap
 } from "lucide-react";
@@ -124,10 +121,8 @@ export function AiSolutionsExperience({
 
   return (
     <>
-      <section className="relative min-h-[92vh] border-b border-white/10 pt-28">
-        <div className="dashboard-grid pointer-events-none absolute inset-0 opacity-25 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
-        <div className="pointer-events-none absolute left-1/2 top-32 h-px w-[72%] -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-300/50 to-transparent" />
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-20 pt-12 lg:grid-cols-[0.86fr_1.14fr] lg:items-center">
+      <section className="border-b border-white/10 pt-28">
+        <div className="mx-auto grid max-w-7xl gap-12 px-5 pb-20 pt-12 lg:grid-cols-[0.86fr_1.14fr] lg:items-center">
           <div>
             {checkoutStatus === "success" ? (
               <div className="mb-6 border border-emerald-300/25 bg-emerald-300/10 p-4 text-sm leading-6 text-emerald-100">
@@ -138,48 +133,32 @@ export function AiSolutionsExperience({
                 Checkout was cancelled. Nothing was charged, and you can return to the packages whenever you are ready.
               </div>
             ) : null}
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-2 text-sm text-sky-100">
-              <Sparkles className="h-4 w-4" />
-              AI opportunity intelligence
-            </div>
-            <h1 className="mt-6 max-w-3xl text-balance text-5xl font-semibold leading-[1.02] text-white sm:text-6xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-300">
+              AI Solutions
+            </p>
+            <h1 className="mt-4 max-w-3xl text-balance text-5xl font-semibold leading-[1.02] text-white sm:text-6xl">
               See where AI fits before you invest.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/65">
               Scan your website, explore practical AI systems, and identify opportunities to save
               time, respond faster, and create a better customer experience.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8">
               <Button asChild size="lg">
                 <a href="#scanner">
                   Scan My Website
                   <ScanSearch className="h-5 w-5" />
                 </a>
               </Button>
-              <Button asChild size="lg" variant="secondary">
-                <a href="#solutions">
-                  Explore Solutions
-                  <ArrowRight className="h-5 w-5" />
-                </a>
-              </Button>
-            </div>
-            <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/45">
-              <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-sky-300" />No growth guarantees</span>
-              <span className="flex items-center gap-2"><CircleGauge className="h-4 w-4 text-sky-300" />Opportunity-based scoring</span>
-              <span className="flex items-center gap-2"><LockKeyhole className="h-4 w-4 text-sky-300" />Private lead capture</span>
             </div>
           </div>
 
           <div id="scanner" className="scroll-mt-28 overflow-hidden rounded-lg border border-white/10 bg-[#08101d]/90 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+            <div className="border-b border-white/10 px-5 py-4">
               <div>
                 <p className="font-semibold text-white">Automation Opportunity Scanner</p>
                 <p className="mt-1 text-xs text-white/40">Website signals + AI recommendations</p>
               </div>
-              <span className="flex items-center gap-2 text-xs text-emerald-300">
-                <span className="h-2 w-2 rounded-full bg-emerald-300" />
-                Online
-              </span>
             </div>
 
             {!result ? (
@@ -252,9 +231,9 @@ export function AiSolutionsExperience({
                     <p className="mt-3 leading-7 text-white/55">{result.summary}</p>
                   </div>
                 </div>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <div className="mt-6 divide-y divide-white/10 border-y border-white/10">
                   {result.categories.map((category) => (
-                    <div className="border border-white/10 bg-black/20 p-4" key={category.label}>
+                    <div className="py-4" key={category.label}>
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-sm font-medium text-white">{category.label}</p>
                         <span className={`text-sm font-semibold ${scoreColor(category.score)}`}>{category.score}</span>
@@ -266,9 +245,9 @@ export function AiSolutionsExperience({
                     </div>
                   ))}
                 </div>
-                <div className="mt-6 space-y-3">
-                  {result.opportunities.map((opportunity) => (
-                    <div className="flex gap-4 border-l-2 border-sky-300/50 bg-white/[0.035] p-4" key={opportunity.title}>
+                <div className="mt-6 space-y-5">
+                  {result.opportunities.slice(0, 3).map((opportunity) => (
+                    <div className="flex gap-4" key={opportunity.title}>
                       <Zap className="mt-0.5 h-5 w-5 shrink-0 text-sky-300" />
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -299,7 +278,7 @@ export function AiSolutionsExperience({
           <h2 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">Choose the bottleneck. See the system.</h2>
           <p className="mt-5 leading-8 text-white/55">Explore practical ways AI can support customer communication and internal operations without replacing the human judgment your business depends on.</p>
         </div>
-        <div className="mt-10 grid gap-6 lg:grid-cols-[320px_1fr]">
+        <div className="mt-10 grid gap-6 lg:grid-cols-[280px_1fr]">
           <div className="space-y-2">
             {aiSolutionServices.map((item, index) => (
               <button
@@ -314,19 +293,12 @@ export function AiSolutionsExperience({
               </button>
             ))}
           </div>
-          <div className="dashboard-grid relative min-h-[430px] overflow-hidden border border-white/10 bg-[#07101d] p-6 sm:p-10">
-            <div className="absolute right-0 top-0 h-px w-2/3 bg-gradient-to-r from-transparent to-sky-300/50" />
+          <div className="min-h-[380px] border border-white/10 bg-[#07101d] p-6 sm:p-10">
             <service.icon className="h-10 w-10 text-sky-300" />
-            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">System {String(activeService + 1).padStart(2, "0")}</p>
-            <h3 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">{service.title}</h3>
+            <h3 className="mt-8 text-3xl font-semibold text-white sm:text-4xl">{service.title}</h3>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">{service.description}</p>
-            <div className="mt-8 grid gap-px bg-white/10 sm:grid-cols-3">
-              {service.signals.map((signal) => (
-                <div className="bg-[#091321] p-4 text-sm text-white/65" key={signal}>
-                  <Check className="mb-3 h-4 w-4 text-emerald-300" />
-                  {signal}
-                </div>
-              ))}
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/45">
+              {service.signals.map((signal) => <span key={signal}>{signal}</span>)}
             </div>
             <div className="mt-8 border-l-2 border-sky-300/50 pl-5">
               <p className="text-xs uppercase tracking-[0.18em] text-white/35">Potential operational outcome</p>
@@ -363,17 +335,9 @@ export function AiSolutionsExperience({
               <p className="font-semibold text-white">Projected capacity model</p>
               <p className="mt-1 text-xs text-white/40">Illustrative estimate, not a guaranteed result</p>
             </div>
-            <div className="grid gap-px bg-white/10 sm:grid-cols-3">
-              {[
-                [projection.weeklyHours, "hours / week"],
-                [projection.monthlyHours, "hours / month"],
-                [projection.annualCapacity, "hours / year"]
-              ].map(([value, label]) => (
-                <div className="bg-[#08111e] p-6" key={label}>
-                  <p className="text-3xl font-semibold text-white">{value}</p>
-                  <p className="mt-2 text-xs uppercase tracking-[0.16em] text-sky-300">{label}</p>
-                </div>
-              ))}
+            <div className="bg-[#08111e] p-8">
+              <p className="text-5xl font-semibold text-white">{projection.monthlyHours}</p>
+              <p className="mt-2 text-sm text-sky-300">potential hours reclaimed per month</p>
             </div>
             <div className="p-6">
               <p className="text-sm leading-7 text-white/55">
@@ -391,7 +355,7 @@ export function AiSolutionsExperience({
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">Engagement Options</p>
           <h2 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">Start focused. Expand when the system proves useful.</h2>
-          <p className="mt-5 leading-8 text-white/55">Clear starting points for common implementations. Final scope is confirmed before work begins.</p>
+          <p className="mt-5 leading-8 text-white/55">Choose a focused starting point. Final scope is confirmed before work begins.</p>
         </div>
         <div className="mt-10 grid gap-4 lg:grid-cols-3">
           {solutionTiers.map((tier) => (
@@ -402,7 +366,7 @@ export function AiSolutionsExperience({
               <p className="mt-2 text-xs text-white/35">{tier.suffix}</p>
               <p className="mt-5 min-h-20 leading-7 text-white/55">{tier.description}</p>
               <ul className="mt-6 space-y-3">
-                {tier.features.map((feature) => (
+                {tier.features.slice(0, 3).map((feature) => (
                   <li className="flex gap-3 text-sm text-white/65" key={feature}><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />{feature}</li>
                 ))}
               </ul>

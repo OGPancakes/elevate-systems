@@ -148,7 +148,7 @@ export function ElevateBot() {
 
       <button
         aria-label="Open Elevate Bot"
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-sky-400 text-slate-950 shadow-glow transition hover:scale-105"
+        className="flex h-12 w-12 items-center justify-center rounded-full border border-sky-300/30 bg-[#0a1624] text-sky-300 shadow-lg transition hover:border-sky-300/60 hover:text-white"
         onClick={() => setOpen((value) => !value)}
         type="button"
       >
