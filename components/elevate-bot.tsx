@@ -81,10 +81,10 @@ export function ElevateBot() {
   }
 
   return (
-    <div className="pointer-events-none fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
       <div
         className={cn(
-          "glass pointer-events-auto w-[calc(100vw-2.5rem)] max-w-[390px] overflow-hidden rounded-2xl transition-all duration-300",
+          "glass w-[calc(100vw-2.5rem)] max-w-[390px] overflow-hidden rounded-2xl transition-all duration-300",
           open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-5 opacity-0"
         )}
       >
@@ -148,7 +148,7 @@ export function ElevateBot() {
 
       <button
         aria-label="Open Elevate Bot"
-        className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-sky-300/30 bg-[#0a1624] text-sky-300 shadow-lg transition hover:border-sky-300/60 hover:text-white"
+        className="flex h-12 w-12 items-center justify-center rounded-full border border-sky-300/30 bg-[#0a1624] text-sky-300 shadow-lg transition hover:border-sky-300/60 hover:text-white"
         onClick={() => setOpen((value) => !value)}
         type="button"
       >

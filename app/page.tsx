@@ -1,11 +1,28 @@
 import Link from "next/link";
-import { ArrowRight, ScanSearch, Sparkles } from "lucide-react";
+import { ArrowRight, Bot, MonitorSmartphone, ScanSearch, Sparkles, Workflow } from "lucide-react";
 
 import { DashboardPreview } from "@/components/dashboard-preview";
-import { AutomationDemo } from "@/components/automation-demo";
 import { ElevateBot } from "@/components/elevate-bot";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
+
+const capabilities = [
+  {
+    icon: MonitorSmartphone,
+    title: "Websites built to convert",
+    description: "Clear positioning, faster customer journeys, and lead capture connected to your operations."
+  },
+  {
+    icon: Bot,
+    title: "AI that responds",
+    description: "Assistants and reception systems that answer, qualify, and route customer requests."
+  },
+  {
+    icon: Workflow,
+    title: "Follow-up that runs",
+    description: "CRM, booking, and communication workflows that keep every inquiry moving."
+  }
+];
 
 const aiTools = [
   {
@@ -50,7 +67,28 @@ export default function Home() {
         <DashboardPreview />
       </section>
 
-      <AutomationDemo />
+      <section className="border-y border-white/10 bg-white/[0.02]">
+        <div className="mx-auto max-w-7xl px-5 py-20">
+          <div className="max-w-2xl">
+            <p className="text-sm font-medium text-sky-300">One connected system</p>
+            <h2 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">
+              Fewer tools competing for attention. One clear customer journey.
+            </h2>
+          </div>
+          <div className="mt-12 divide-y divide-white/10 border-y border-white/10">
+            {capabilities.map((capability) => (
+              <div
+                className="grid gap-4 py-7 md:grid-cols-[56px_0.7fr_1fr] md:items-center"
+                key={capability.title}
+              >
+                <capability.icon className="h-6 w-6 text-sky-300" />
+                <h3 className="text-xl font-semibold text-white">{capability.title}</h3>
+                <p className="max-w-xl leading-7 text-white/50">{capability.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="mx-auto max-w-7xl px-5 py-24">
         <div className="border-b border-white/10 pb-24">

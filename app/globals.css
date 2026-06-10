@@ -102,18 +102,10 @@ body {
   animation: flow-ring-two 13s ease-in-out infinite reverse;
 }
 
-.hero-tilt {
-  transform-style: preserve-3d;
-  transition: transform 180ms ease-out;
-  will-change: transform;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .flow-ring,
-  .animate-float,
-  .hero-tilt {
+  .animate-float {
     animation: none;
-    transform: none !important;
   }
 }
 
