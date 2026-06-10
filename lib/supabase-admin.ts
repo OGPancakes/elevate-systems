@@ -46,6 +46,8 @@ export type BookingRecord = {
   business_name: string;
   website_url: string | null;
   selected_datetime: string | null;
+  duration_minutes: number;
+  timezone: string;
   reason: string;
   service_interest: string | null;
   source: string;

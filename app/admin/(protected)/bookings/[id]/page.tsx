@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { DetailItem, DetailSection } from "@/components/admin-detail";
 import { AdminRecordEditor } from "@/components/admin-record-editor";
 import { PageHeading, StatusBadge } from "@/components/admin-ui";
+import { formatBookingTime } from "@/lib/booking-schedule";
 import { BookingRecord, getRecord } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
@@ -32,8 +33,10 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
               <DetailItem label="Phone">{booking.phone}</DetailItem>
               <DetailItem label="Website">{booking.website_url}</DetailItem>
               <DetailItem label="Requested time">
-                {booking.selected_datetime ? new Date(booking.selected_datetime).toLocaleString() : "Not selected"}
+                {booking.selected_datetime ? formatBookingTime(booking.selected_datetime) : "Not selected"}
               </DetailItem>
+              <DetailItem label="Duration">{booking.duration_minutes || 30} minutes</DetailItem>
+              <DetailItem label="Time zone">Eastern Time</DetailItem>
               <DetailItem label="Service">{booking.service_interest}</DetailItem>
               <DetailItem label="Submitted">{new Date(booking.booked_at).toLocaleString()}</DetailItem>
             </div>

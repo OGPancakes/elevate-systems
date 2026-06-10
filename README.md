@@ -11,6 +11,5 @@ The website audit and booking forms work best with these Vercel environment vari
 - `SUPABASE_LOGO_BUCKET` for optional logo uploads. Default: `lead-assets`.
 - `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `LEAD_NOTIFICATION_EMAIL` for email notifications.
 - `MAKE_WEBHOOK_URL` as an optional automation webhook.
-- `NEXT_PUBLIC_MICROSOFT_BOOKINGS_URL` for the embedded booking calendar on `/book`.
 
 Run `supabase-schema.sql` in Supabase SQL Editor to create the lead tables and private logo bucket.

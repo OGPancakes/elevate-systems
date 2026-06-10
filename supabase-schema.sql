@@ -94,6 +94,10 @@ create table if not exists bookings (
   created_at timestamptz not null default now()
 );
 
+alter table bookings
+  add column if not exists duration_minutes integer not null default 30,
+  add column if not exists timezone text not null default 'America/New_York';
+
 create table if not exists bot_conversations (
   id uuid primary key default gen_random_uuid(),
   lead_id uuid references leads(id) on delete set null,
@@ -114,6 +118,9 @@ create index if not exists inquiries_created_at_idx on inquiries (created_at des
 create index if not exists inquiries_status_idx on inquiries (status);
 create index if not exists bookings_created_at_idx on bookings (created_at desc);
 create index if not exists bookings_status_idx on bookings (status);
+create unique index if not exists bookings_unique_upcoming_slot_idx
+  on bookings (selected_datetime)
+  where status = 'Upcoming' and selected_datetime is not null;
 create index if not exists bot_conversations_lead_id_idx on bot_conversations (lead_id);
 
 alter table leads enable row level security;

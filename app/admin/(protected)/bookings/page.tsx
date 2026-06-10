@@ -1,4 +1,5 @@
 import { EmptyState, PageHeading, RecordLink, StatusBadge } from "@/components/admin-ui";
+import { formatBookingTime } from "@/lib/booking-schedule";
 import { BookingRecord, listRecords } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
@@ -54,7 +55,9 @@ export default async function BookingsPage({
                 />
                 <StatusBadge status={item.status} />
                 <span className="text-xs text-white/40">
-                  {new Date(item.selected_datetime || item.booked_at).toLocaleString()}
+                  {item.selected_datetime
+                    ? formatBookingTime(item.selected_datetime)
+                    : new Date(item.booked_at).toLocaleString()}
                 </span>
               </div>
             ))}
