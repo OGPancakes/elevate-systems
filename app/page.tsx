@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Bot, MonitorSmartphone, Workflow } from "lucide-react";
+import { ArrowRight, Bot, MonitorSmartphone, ScanSearch, Sparkles, Workflow } from "lucide-react";
 
 import { DashboardPreview } from "@/components/dashboard-preview";
 import { ElevateBot } from "@/components/elevate-bot";
@@ -21,6 +21,23 @@ const capabilities = [
     icon: Workflow,
     title: "Follow-up that runs",
     description: "CRM, booking, and communication workflows that keep every inquiry moving."
+  }
+];
+
+const aiTools = [
+  {
+    icon: ScanSearch,
+    label: "AI Opportunity Scanner",
+    description: "Find where AI could save time, improve response, and simplify repetitive work.",
+    href: "/ai-solutions#scanner",
+    action: "Run opportunity scan"
+  },
+  {
+    icon: Sparkles,
+    label: "Website Audit AI",
+    description: "Review your current site and see a premium visual redesign concept for your business.",
+    href: "/audit",
+    action: "Audit my website"
   }
 ];
 
@@ -74,28 +91,33 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-24">
-        <div className="grid gap-8 border-b border-white/10 pb-20 lg:grid-cols-[1fr_0.8fr] lg:items-end">
-          <div>
-            <p className="text-sm font-medium text-sky-300">Start with clarity</p>
-            <h2 className="mt-3 max-w-3xl text-3xl font-semibold text-white sm:text-5xl">
-              Find the highest-value automation opportunity in your business.
+        <div className="border-b border-white/10 pb-24">
+          <div className="max-w-2xl">
+            <p className="text-sm font-medium text-sky-300">Interactive AI tools</p>
+            <h2 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">
+              Start with the question you need answered.
             </h2>
           </div>
-          <div>
-            <p className="leading-8 text-white/55">
-              Run the AI opportunity scan to see where response, lead capture, or repetitive work
-              may be improved. No revenue promises. Just a focused first assessment.
-            </p>
-            <Button asChild className="mt-6">
-              <Link href="/ai-solutions#scanner">
-                Run the Opportunity Scan
-                <ArrowRight className="h-4 w-4" />
+          <div className="mt-10 grid gap-px overflow-hidden border border-white/10 bg-white/10 lg:grid-cols-2">
+            {aiTools.map((tool) => (
+              <Link
+                className="group bg-[#060c16] p-7 transition hover:bg-[#0a1523] sm:p-9"
+                href={tool.href}
+                key={tool.label}
+              >
+                <tool.icon className="h-7 w-7 text-sky-300" />
+                <h3 className="mt-8 text-2xl font-semibold text-white">{tool.label}</h3>
+                <p className="mt-3 max-w-md leading-7 text-white/50">{tool.description}</p>
+                <span className="mt-8 flex items-center gap-2 text-sm font-medium text-sky-300">
+                  {tool.action}
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </span>
               </Link>
-            </Button>
+            ))}
           </div>
         </div>
 
-        <div className="grid gap-8 pt-20 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+        <div className="grid gap-8 pt-24 lg:grid-cols-[1fr_0.8fr] lg:items-center">
           <div>
             <p className="text-sm font-medium text-sky-300">Ready to talk?</p>
             <h2 className="mt-3 max-w-3xl text-3xl font-semibold text-white sm:text-5xl">
