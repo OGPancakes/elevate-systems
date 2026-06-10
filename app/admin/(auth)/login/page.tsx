@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { LockKeyhole } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -15,8 +16,18 @@ export default async function AdminLoginPage({
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#030711] px-5">
       <div className="w-full max-w-md rounded-lg border border-white/10 bg-white/[0.045] p-7 shadow-2xl">
-        <div className="flex h-11 w-11 items-center justify-center rounded-md bg-sky-400 text-slate-950">
-          <LockKeyhole className="h-5 w-5" />
+        <div className="flex items-center justify-between">
+          <Image
+            alt="Elevate Systems"
+            className="h-20 w-20 object-contain"
+            height={80}
+            src="/elevate-logo.png"
+            width={80}
+            priority
+          />
+          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-sky-300/20 bg-sky-300/10 text-sky-300">
+            <LockKeyhole className="h-5 w-5" />
+          </div>
         </div>
         <p className="mt-6 text-sm font-semibold uppercase tracking-[0.22em] text-sky-300">
           Elevate Systems

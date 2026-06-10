@@ -9,10 +9,15 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://elevatesystems.ai"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://elevatesystems.us"),
   title: "Elevate Systems | AI Automation and Custom Websites",
   description:
     "Premium AI automation, lead capture, CRM, chatbot, and custom website systems for service businesses.",
+  icons: {
+    icon: "/elevate-logo.png",
+    shortcut: "/elevate-logo.png",
+    apple: "/elevate-logo.png"
+  },
   openGraph: {
     title: "Elevate Systems",
     description:

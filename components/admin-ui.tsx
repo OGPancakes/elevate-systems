@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Search } from "lucide-react";
 
 export function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -15,7 +16,7 @@ export function StatusBadge({ status }: { status: string }) {
   };
 
   return (
-    <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${styles[status] ?? "border-white/10 bg-white/5 text-white/60"}`}>
+    <span className={`inline-flex h-fit w-fit shrink-0 items-center self-start whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium leading-none ${styles[status] ?? "border-white/10 bg-white/5 text-white/60"}`}>
       {status}
     </span>
   );
@@ -58,12 +59,15 @@ export function SearchBar({
 }) {
   return (
     <form action={action} className="mb-5 flex gap-2">
-      <input
-        className="min-w-0 flex-1 rounded-md border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none ring-sky-300/30 placeholder:text-white/30 focus:ring-2"
-        defaultValue={defaultValue}
-        name="q"
-        placeholder={placeholder}
-      />
+      <label className="relative min-w-0 flex-1">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+        <input
+          className="w-full rounded-md border border-white/10 bg-white/[0.04] py-2.5 pl-10 pr-3 text-sm text-white outline-none ring-sky-300/30 placeholder:text-white/30 focus:ring-2"
+          defaultValue={defaultValue}
+          name="q"
+          placeholder={placeholder}
+        />
+      </label>
       <button className="rounded-md bg-sky-400 px-4 py-2 text-sm font-semibold text-slate-950">
         Search
       </button>

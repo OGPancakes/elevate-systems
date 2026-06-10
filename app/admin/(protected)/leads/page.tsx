@@ -1,3 +1,5 @@
+import { Search } from "lucide-react";
+
 import { EmptyState, PageHeading, RecordLink, StatusBadge } from "@/components/admin-ui";
 import { LeadRecord, listRecords } from "@/lib/supabase-admin";
 
@@ -37,12 +39,15 @@ export default async function LeadsPage({
         title="Leads"
       />
       <form className="mb-6 grid gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-3 sm:grid-cols-[minmax(220px,1fr)_180px_180px_auto]" action="/admin/leads">
-        <input
-          className="rounded-md border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-300/50"
-          defaultValue={params?.q}
-          name="q"
-          placeholder="Search name, email, business, or website"
-        />
+        <label className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+          <input
+            className="w-full rounded-md border border-white/10 bg-black/30 py-2.5 pl-10 pr-3 text-sm text-white outline-none focus:border-sky-300/50"
+            defaultValue={params?.q}
+            name="q"
+            placeholder="Search name, email, business, or website"
+          />
+        </label>
         <select className="rounded-md border border-white/10 bg-[#07101e] px-3 py-2.5 text-sm text-white" defaultValue={status} name="status">
           <option value="">All statuses</option>
           {["New", "Contacted", "Booked", "Closed", "Lost"].map((value) => <option key={value}>{value}</option>)}

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   BarChart3,
@@ -21,9 +22,21 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#050914] text-white">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-white/10 bg-[#070c18] lg:flex lg:flex-col">
-        <div className="border-b border-white/10 px-6 py-6">
-          <p className="text-sm font-semibold tracking-[0.2em]">ELEVATE</p>
-          <p className="mt-1 text-xs tracking-[0.28em] text-sky-300">COMMAND CENTER</p>
+        <div className="border-b border-white/10 px-5 py-5">
+          <Link className="flex items-center gap-3" href="/admin/dashboard">
+            <Image
+              alt="Elevate Systems"
+              className="h-14 w-14 shrink-0 object-contain"
+              height={56}
+              src="/elevate-logo.png"
+              width={56}
+              priority
+            />
+            <div>
+              <p className="text-sm font-semibold tracking-[0.2em]">ELEVATE</p>
+              <p className="mt-1 text-[10px] tracking-[0.2em] text-sky-300">COMMAND CENTER</p>
+            </div>
+          </Link>
         </div>
         <nav className="flex-1 space-y-1 p-3">
           {navigation.map((item) => (
@@ -57,12 +70,22 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <div className="lg:pl-64">
         <header className="sticky top-0 z-20 border-b border-white/10 bg-[#050914]/90 px-5 py-4 backdrop-blur-xl lg:px-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">
-                Elevate Systems
-              </p>
-              <p className="mt-1 hidden text-sm text-white/45 sm:block">Lead operations</p>
-            </div>
+            <Link className="flex items-center gap-3 lg:hidden" href="/admin/dashboard">
+              <Image
+                alt="Elevate Systems"
+                className="h-10 w-10 object-contain"
+                height={40}
+                src="/elevate-logo.png"
+                width={40}
+              />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">
+                  Elevate Systems
+                </p>
+                <p className="mt-1 hidden text-sm text-white/45 sm:block">Lead operations</p>
+              </div>
+            </Link>
+            <p className="hidden text-sm text-white/45 lg:block">Lead operations</p>
             <nav className="flex max-w-full gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden">
               {navigation.slice(0, 4).map((item) => (
                 <Link

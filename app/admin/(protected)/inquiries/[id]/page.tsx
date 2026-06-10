@@ -19,7 +19,7 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
       <Link className="mb-5 inline-flex items-center gap-2 text-sm text-white/45 hover:text-white" href="/admin/inquiries">
         <ArrowLeft className="h-4 w-4" />Back to inquiries
       </Link>
-      <div className="flex justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <PageHeading description={inquiry.email} eyebrow={inquiry.source} title={inquiry.name} />
         <StatusBadge status={inquiry.status} />
       </div>

@@ -99,7 +99,7 @@ export default async function AdminDashboardPage() {
           <div className="divide-y divide-white/10">
             {recent.map((item) => (
               <Link
-                className="grid gap-3 px-5 py-4 transition hover:bg-white/[0.04] sm:grid-cols-[110px_1fr_auto]"
+                className="grid items-center gap-3 px-5 py-4 transition hover:bg-white/[0.04] sm:grid-cols-[110px_1fr_auto]"
                 href={item.href}
                 key={`${item.type}-${item.id}`}
               >

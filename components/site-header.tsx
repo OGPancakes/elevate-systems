@@ -18,13 +18,13 @@ export function SiteHeader() {
         <Link className="flex items-center gap-3" href="/" aria-label="Elevate Systems home">
           <Image
             alt="Elevate Systems logo"
-            className="h-10 w-10 rounded-md object-cover"
-            height={40}
+            className="h-14 w-14 object-contain sm:h-16 sm:w-16"
+            height={64}
             src="/elevate-logo.png"
-            width={40}
+            width={64}
             priority
           />
-          <div>
+          <div className="hidden sm:block">
             <p className="text-sm font-semibold tracking-[0.18em] text-white">ELEVATE</p>
             <p className="text-xs tracking-[0.28em] text-sky-300">SYSTEMS</p>
           </div>
