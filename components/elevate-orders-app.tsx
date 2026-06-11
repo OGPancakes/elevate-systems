@@ -1176,12 +1176,12 @@ function PhoneSetup() {
         <section className="ops-card setup-checklist">
           <div className="card-heading"><div><span className="eyebrow">GO-LIVE CHECKLIST</span><h2>Connect a real number</h2></div></div>
           <div className="setup-step complete"><span><Check /></span><div><b>Menu and hours connected</b><p>June uses the same availability as online ordering.</p></div></div>
-          <div className="setup-step"><span>2</span><div><b>Purchase or port a Twilio number</b><p>Choose a local voice-enabled number for the restaurant.</p></div></div>
-          <div className="setup-step"><span>3</span><div><b>Connect the voice webhook</b><p>Point incoming calls to the deployed Elevate Orders voice endpoint.</p></div></div>
-          <div className="setup-step"><span>4</span><div><b>Enable live order storage</b><p>Connect Supabase so every channel shares durable orders and customer records.</p></div></div>
+          <div className="setup-step complete"><span><Check /></span><div><b>Twilio number connected</b><p>(908) 639-5394 is ready for live voice demonstrations.</p></div></div>
+          <div className="setup-step complete"><span><Check /></span><div><b>Voice webhook connected</b><p>Incoming calls route to June through the deployed Elevate Orders endpoint.</p></div></div>
+          <div className="setup-step complete"><span><Check /></span><div><b>Live activity storage connected</b><p>Call status and guest speech appear across the operations dashboard.</p></div></div>
         </section>
         <section className="ops-card call-transcript">
-          <div className="card-heading"><div><span className="eyebrow">SAMPLE CALL</span><h2>What guests hear</h2></div></div>
+          <div className="card-heading"><div><span className="eyebrow">{voiceEvents.length ? "LIVE CALL FEED" : "SAMPLE CALL"}</span><h2>{voiceEvents.length ? "What June is hearing" : "What guests hear"}</h2></div></div>
           {voiceEvents.slice(0, 4).map((event) => (
             <div className="transcript-line live-call-line" key={event.id}><span><PhoneCall size={13} /></span><p><b>{event.from}</b>{event.detail}</p></div>
           ))}
