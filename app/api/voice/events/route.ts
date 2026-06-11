@@ -1,3 +1,5 @@
+import { listRecords, upsertRecord, type ConversationRecord } from "@/lib/supabase-admin";
+
 type VoiceEvent = {
   id: string;
   callSid: string;
@@ -22,7 +24,30 @@ const callerLabel = (phone: string) => {
 };
 
 export async function GET() {
-  return Response.json({ events: store.events.slice(0, 20) }, {
+  let events = store.events.slice(0, 20);
+
+  try {
+    const conversations = await listRecords<ConversationRecord>(
+      "bot_conversations",
+      "session_id=like.twilio-%25&select=*&order=updated_at.desc&limit=12",
+    );
+    events = conversations
+      .flatMap((conversation) => conversation.messages)
+      .map((message) => {
+        try {
+          return JSON.parse(message.content) as VoiceEvent;
+        } catch {
+          return null;
+        }
+      })
+      .filter((event): event is VoiceEvent => Boolean(event))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, 20);
+  } catch {
+    // Local demos work without Supabase; production uses it when configured.
+  }
+
+  return Response.json({ events }, {
     headers: { "Cache-Control": "no-store, max-age=0" },
   });
 }
@@ -56,5 +81,25 @@ export async function POST(request: Request) {
   };
 
   store.events = [event, ...store.events.filter((item) => !(item.callSid === callSid && item.detail === detail))].slice(0, 40);
+
+  try {
+    const sessionId = `twilio-${callSid}`;
+    const existing = await listRecords<ConversationRecord>(
+      "bot_conversations",
+      `session_id=eq.${encodeURIComponent(sessionId)}&select=*&limit=1`,
+    );
+    const messages = [
+      { role: status, content: JSON.stringify(event) },
+      ...(existing[0]?.messages ?? []),
+    ].slice(0, 20);
+    await upsertRecord<ConversationRecord>("bot_conversations", {
+      session_id: sessionId,
+      messages,
+      updated_at: new Date().toISOString(),
+    }, "session_id");
+  } catch {
+    // Fall back to the warm-instance store when Supabase is unavailable.
+  }
+
   return Response.json({ ok: true, event });
 }
