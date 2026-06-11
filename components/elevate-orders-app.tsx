@@ -51,6 +51,15 @@ type LiveSession = {
   startedAt: string;
 };
 
+type VoiceEvent = {
+  id: string;
+  callSid: string;
+  from: string;
+  status: string;
+  detail: string;
+  createdAt: string;
+};
+
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const categories: Array<"All" | MenuCategory> = ["All", "Sandwiches", "Pizza", "Bowls", "Sides", "Drinks"];
 
@@ -114,6 +123,47 @@ export default function Home() {
     if (!dataLoaded) return;
     localStorage.setItem("elevate-orders-sessions", JSON.stringify(sessions));
   }, [dataLoaded, sessions]);
+
+  useEffect(() => {
+    if (!isAdminPath) return;
+    let active = true;
+
+    const syncVoiceEvents = async () => {
+      try {
+        const response = await fetch("/api/voice/events", { cache: "no-store" });
+        const data = await response.json() as { events?: VoiceEvent[] };
+        if (!active || !data.events?.length) return;
+        const callSessions = Array.from(
+          data.events.reduce((calls, event) => {
+            if (!calls.has(event.callSid)) {
+              calls.set(event.callSid, {
+                id: `twilio-${event.callSid}`,
+                guest: event.from,
+                channel: "Phone",
+                stage: "Calling",
+                detail: event.detail,
+                startedAt: new Date(event.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              } satisfies LiveSession);
+            }
+            return calls;
+          }, new Map<string, LiveSession>()),
+        ).map(([, session]) => session);
+        setSessions((current) => [
+          ...callSessions,
+          ...current.filter((session) => !session.id.startsWith("twilio-")),
+        ].slice(0, 12));
+      } catch {
+        // Keep the rest of the demo available if the voice event feed is offline.
+      }
+    };
+
+    syncVoiceEvents();
+    const timer = window.setInterval(syncVoiceEvents, 2000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [isAdminPath]);
 
   const updateSession = (session: LiveSession) => {
     setSessions((current) => [session, ...current.filter((item) => item.id !== session.id)].slice(0, 12));
@@ -1075,6 +1125,24 @@ function LiveActivity({ sessions, orders }: { sessions: LiveSession[]; orders: O
 function PhoneSetup() {
   const [testCall, setTestCall] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [voiceEvents, setVoiceEvents] = useState<VoiceEvent[]>([]);
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const response = await fetch("/api/voice/events", { cache: "no-store" });
+        const data = await response.json() as { events?: VoiceEvent[] };
+        setVoiceEvents(data.events ?? []);
+      } catch {
+        setVoiceEvents([]);
+      }
+    };
+    loadEvents();
+    const timer = window.setInterval(loadEvents, 2000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const latestCall = voiceEvents[0];
   return (
     <>
       <PageHeader eyebrow="PHONE ORDERING" title="Turn every ring into an order.">
@@ -1094,13 +1162,13 @@ function PhoneSetup() {
             }}>{copied ? "Webhook copied" : "Copy webhook URL"}</button>
           </div>
         </div>
-        <div className={`phone-device ${testCall ? "ringing" : ""}`}>
+        <div className={`phone-device ${testCall || latestCall?.status === "ringing" ? "ringing" : ""}`}>
           <div className="phone-speaker" />
-          <span className="call-status">{testCall ? "INCOMING CALL" : "VOICE CHANNEL READY"}</span>
+          <span className="call-status">{latestCall ? latestCall.status.toUpperCase() : testCall ? "INCOMING CALL" : "VOICE CHANNEL READY"}</span>
           <div className="caller-avatar"><PhoneCall /></div>
-          <h3>{testCall ? "New customer" : "June is standing by"}</h3>
-          <p>{testCall ? "(555) 867-4412" : "Typical answer time: under 2 seconds"}</p>
-          {testCall && <div className="waveform">{Array.from({ length: 16 }).map((_, index) => <i key={index} />)}</div>}
+          <h3>{latestCall ? latestCall.from : testCall ? "New customer" : "June is standing by"}</h3>
+          <p>{latestCall ? latestCall.detail : testCall ? "(555) 867-4412" : "Typical answer time: under 2 seconds"}</p>
+          {(latestCall || testCall) && <div className="waveform">{Array.from({ length: 16 }).map((_, index) => <i key={index} />)}</div>}
           <button onClick={() => setTestCall(!testCall)}>{testCall ? "End demo call" : "Start demo call"}</button>
         </div>
       </section>
@@ -1114,6 +1182,9 @@ function PhoneSetup() {
         </section>
         <section className="ops-card call-transcript">
           <div className="card-heading"><div><span className="eyebrow">SAMPLE CALL</span><h2>What guests hear</h2></div></div>
+          {voiceEvents.slice(0, 4).map((event) => (
+            <div className="transcript-line live-call-line" key={event.id}><span><PhoneCall size={13} /></span><p><b>{event.from}</b>{event.detail}</p></div>
+          ))}
           <div className="transcript-line june"><span>J</span><p><b>June</b>Thanks for calling Juniper &amp; Stone. Are you ordering for pickup or delivery?</p></div>
           <div className="transcript-line guest"><span>G</span><p><b>Guest</b>Pickup. I want something spicy and a side.</p></div>
           <div className="transcript-line june"><span>J</span><p><b>June</b>The Hot Honey Pepperoni with Garlic Knots is a great match. Your total before tax is $26. Should I add both?</p></div>

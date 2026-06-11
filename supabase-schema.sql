@@ -151,6 +151,25 @@ alter table bookings enable row level security;
 alter table bot_conversations enable row level security;
 alter table purchases enable row level security;
 
+-- Optional durable storage for Elevate Orders phone activity. The live demo
+-- works without this table; production can persist the same events here.
+create table if not exists elevate_order_call_events (
+  id uuid primary key default gen_random_uuid(),
+  call_sid text not null,
+  caller text,
+  status text not null,
+  detail text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists elevate_order_call_events_created_at_idx
+  on elevate_order_call_events (created_at desc);
+
+create index if not exists elevate_order_call_events_call_sid_idx
+  on elevate_order_call_events (call_sid);
+
+alter table elevate_order_call_events enable row level security;
+
 insert into leads (
   id, name, business_name, email, website_url, logo_url, logo_storage_path,
   audit_result, website_snapshot, source, status, submitted_at, created_at

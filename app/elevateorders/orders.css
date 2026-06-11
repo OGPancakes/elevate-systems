@@ -587,6 +587,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid color-mix(in srgb, va
 .transcript-line { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 14px 18px; }
 .transcript-line > span { width: 29px; height: 29px; border-radius: 50%; display: grid; place-items: center; background: #e7eee9; color: var(--forest); font-size: 8px; font-weight: 900; }
 .transcript-line.guest > span { background: #f8e5da; color: var(--orange-dark); }
+.live-call-line { animation: live-call-arrive .45s cubic-bezier(.2,.9,.2,1); background: #edf8f2; border-top: 1px solid #cce5d5; }
+.live-call-line > span { background: #2f8b5d; color: white; }
+@keyframes live-call-arrive { from { opacity: 0; transform: translateY(-10px) scale(.98); } }
 .transcript-line p { font-size: 9px; line-height: 1.55; padding: 10px 12px; border-radius: 10px; background: #f4f5f1; margin: 0; }
 .transcript-line b { display: block; margin-bottom: 3px; }
 
