@@ -6,8 +6,7 @@ const realtimeSipXml = (origin: string) => {
   const sipUri = `sip:${projectId}@sip.api.openai.com;transport=tls`;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Joanna-Generative" language="en-US">Hi! I&apos;m connecting you with June now.</Say>
-  <Dial answerOnBridge="true" timeout="20" action="${xmlEscape(origin)}/api/voice/events" method="POST">
+  <Dial answerOnBridge="true" timeout="20">
     <Sip>${xmlEscape(sipUri)}</Sip>
   </Dial>
 </Response>`;

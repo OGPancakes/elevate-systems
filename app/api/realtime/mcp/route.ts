@@ -1,4 +1,5 @@
-import { realtimeMcpTools, runRealtimeTool } from "@/lib/elevate-orders-realtime";
+import { after } from "next/server";
+import { hangupRealtimeCall, realtimeMcpTools, runRealtimeTool } from "@/lib/elevate-orders-realtime";
 
 export const runtime = "nodejs";
 
@@ -45,8 +46,15 @@ export async function POST(request: Request) {
       : {};
     try {
       const output = await runRealtimeTool(callId, name, args);
+      if ((output as { endCall?: boolean }).endCall) {
+        after(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 2400));
+          await hangupRealtimeCall(callId);
+        });
+      }
+      const { endCall: _endCall, ...publicOutput } = output as Record<string, unknown> & { endCall?: boolean };
       return rpcResult(message.id, {
-        content: [{ type: "text", text: JSON.stringify(output) }],
+        content: [{ type: "text", text: JSON.stringify(publicOutput) }],
         isError: Boolean((output as { ok?: boolean }).ok === false),
       });
     } catch {

@@ -1,4 +1,4 @@
-:root {
+.orders-app-root {
   --ink: #152c27;
   --ink-soft: #38534c;
   --forest: #173e34;
@@ -19,17 +19,15 @@
   min-height: 100vh;
 }
 
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; color: var(--ink); background: var(--cream); font-family: var(--font-sans), Arial, sans-serif; }
-button, input { font: inherit; }
-button { color: inherit; }
-button, a { -webkit-tap-highlight-color: transparent; }
-h1, h2, h3, p { margin-top: 0; }
-button { cursor: pointer; }
-button, a, .menu-card, .ticket, .metric-card { transition: transform .3s cubic-bezier(.2,.9,.2,1), box-shadow .3s ease, background-color .25s ease, color .25s ease, border-color .25s ease, opacity .25s ease; }
-button:not(:disabled):active { transform: scale(.94); transition-duration: .1s; }
-button:focus-visible, a:focus-visible { outline: 3px solid color-mix(in srgb, var(--orange) 45%, transparent); outline-offset: 3px; }
+.orders-app-root, .orders-app-root * { box-sizing: border-box; }
+.orders-app-root { color: var(--ink); background: var(--cream); font-family: var(--font-sans), Arial, sans-serif; }
+.orders-app-root button, .orders-app-root input { font: inherit; }
+.orders-app-root button { color: inherit; cursor: pointer; }
+.orders-app-root button, .orders-app-root a { -webkit-tap-highlight-color: transparent; }
+.orders-app-root h1, .orders-app-root h2, .orders-app-root h3, .orders-app-root p { margin-top: 0; }
+.orders-app-root button, .orders-app-root a, .menu-card, .ticket, .metric-card { transition: transform .3s cubic-bezier(.2,.9,.2,1), box-shadow .3s ease, background-color .25s ease, color .25s ease, border-color .25s ease, opacity .25s ease; }
+.orders-app-root button:not(:disabled):active { transform: scale(.94); transition-duration: .1s; }
+.orders-app-root button:focus-visible, .orders-app-root a:focus-visible { outline: 3px solid color-mix(in srgb, var(--orange) 45%, transparent); outline-offset: 3px; }
 
 .brand-logo-button { width: 172px; height: 68px; border: 0; background: transparent; overflow: hidden; display: grid; place-items: center; padding: 0; }
 .brand-logo-image, .sidebar-logo-image, .footer-logo-image, .login-logo-image { object-fit: contain; }

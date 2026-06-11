@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   ArrowUpRight,
   Bot,
@@ -109,14 +108,14 @@ export function ProductDemoShowcase() {
           );
 
           return product.href ? (
-            <Link
+            <a
               className={`product-demo-card group ${index === 0 ? "lg:col-span-2" : ""}`}
               href={product.href}
               key={product.name}
               style={{ animationDelay: `${index * 70}ms` }}
             >
               {content}
-            </Link>
+            </a>
           ) : (
             <button
               className="product-demo-card group text-left"

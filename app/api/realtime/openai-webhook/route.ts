@@ -3,8 +3,10 @@ import {
   parseOpenAIWebhook,
   realtimeCaller,
   realtimeInstructions,
+  startRealtimeGreeting,
   verifyOpenAIWebhook,
 } from "@/lib/elevate-orders-realtime";
+import { after } from "next/server";
 
 export const runtime = "nodejs";
 
@@ -53,7 +55,7 @@ export async function POST(request: Request) {
           transcription: { model: "gpt-4o-mini-transcribe" },
           turn_detection: {
             type: "semantic_vad",
-            eagerness: "medium",
+            eagerness: "high",
             create_response: true,
             interrupt_response: true,
           },
@@ -73,6 +75,8 @@ export async function POST(request: Request) {
     console.error("OpenAI Realtime call acceptance failed", accepted.status, detail);
     return new Response("Could not accept call", { status: 502 });
   }
+
+  after(() => startRealtimeGreeting(callId));
 
   await fetch(`${origin}/api/voice/events`, {
     method: "POST",

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createHmac, timingSafeEqual } from "crypto";
+import WebSocket from "next/dist/compiled/ws";
 import { menuItems } from "@/lib/elevate-orders-data";
 import type { Order } from "@/lib/elevate-orders-types";
 import { listRecords, upsertRecord, type ConversationRecord } from "@/lib/supabase-admin";
@@ -286,7 +287,8 @@ You are June, the live phone ordering assistant for Juniper & Stone. Help caller
 - Do not repeat the caller's entire answer back after every turn.
 
 # Conversation flow
-- Greet the caller once, introduce yourself as June, and ask what sounds good today.
+- The system sends the opening greeting. Do not wait for the caller to speak first.
+- Greet the caller once as: "Hi, this is June from Juniper & Stone. How are you doing today, and what can I get started for you?"
 - Let the caller browse naturally. Answer ingredient, price, vegetarian, and listed-allergen questions from the menu below.
 - Ask whether the order is pickup or delivery before checkout.
 - For delivery, collect and read back the complete street address, including apartment or unit.
@@ -296,10 +298,13 @@ You are June, the live phone ordering assistant for Juniper & Stone. Help caller
 - Use update_order whenever the cart, customer details, fulfillment, address, notes, or allergy note changes.
 - Before placing the order, clearly summarize the items, fulfillment, address if applicable, allergy notes, and estimated total. Ask for explicit confirmation.
 - Call complete_order only after the caller clearly confirms the final summary.
-- After complete_order succeeds, say a short upbeat confirmation and goodbye. Then call end_call as your final action so the phone disconnects. Do not keep talking after end_call.
+- After complete_order succeeds, say a short upbeat confirmation and goodbye. Then call end_call as your final action so the phone disconnects cleanly. Do not keep talking after end_call.
+- If the caller clearly says goodbye, cancel, never mind, or that they are done without placing an order, respond with one warm goodbye and call end_call.
 
 # Handling audio
-- If the caller trails off, allow a natural pause rather than interrupting.
+- Treat short direct answers such as a name, "pickup," "delivery," "yes," or "no" as complete turns. Acknowledge them immediately and continue with the next useful question.
+- Never wait for the caller to say "okay" after they have already answered a question.
+- If the caller trails off mid-sentence, allow a brief natural pause rather than interrupting.
 - If speech is genuinely unclear, ask one short clarification question. Never guess an address, quantity, allergy, or menu item.
 - Ignore background conversations and hold music.
 
@@ -357,7 +362,7 @@ export function realtimeMcpTools() {
     },
     {
       name: "end_call",
-      description: "Hang up only after the order is completed and June has already spoken the final confirmation and goodbye.",
+      description: "End the phone call cleanly after June has already spoken a final goodbye. This also handles callers who cancel or simply say goodbye without ordering.",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
     },
   ];
@@ -394,26 +399,81 @@ export async function runRealtimeTool(callId: string, name: string, input: Recor
     return { ok: true, order, instruction: "Tell the caller the order is confirmed, say goodbye, then call end_call." };
   }
   if (name === "end_call") {
-    if (!current.completed) return { ok: false, error: "Complete the order before ending the call." };
-    const response = await fetch(`https://api.openai.com/v1/realtime/calls/${encodeURIComponent(callId)}/hangup`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY ?? ""}` },
-    });
-    const origin = process.env.NEXT_PUBLIC_SITE_URL;
-    if (origin) {
-      await fetch(`${origin}/api/voice/events`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          callSid: callId,
-          from: current.caller,
-          status: "completed",
-          detail: "Order confirmed, sent to the kitchen, and call completed",
-        }),
-        cache: "no-store",
-      }).catch(() => undefined);
-    }
-    return { ok: response.ok, ended: response.ok };
+    return {
+      ok: true,
+      endCall: true,
+      message: current.completed
+        ? "The order is confirmed. The call will disconnect cleanly now."
+        : "The caller has been told goodbye. The call will disconnect cleanly now.",
+    };
   }
   return { ok: false, error: `Unknown tool: ${name}` };
+}
+
+export async function hangupRealtimeCall(callId: string) {
+  const current = await loadRealtimeDraft(callId);
+  const response = await fetch(`https://api.openai.com/v1/realtime/calls/${encodeURIComponent(callId)}/hangup`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY ?? ""}` },
+  });
+  const origin = process.env.NEXT_PUBLIC_SITE_URL;
+  if (origin) {
+    await fetch(`${origin}/api/voice/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        callSid: callId,
+        from: current?.caller ?? "",
+        status: "completed",
+        detail: current?.completed
+          ? "Order confirmed, sent to the kitchen, and call completed"
+          : "Caller said goodbye and the call ended cleanly",
+      }),
+      cache: "no-store",
+    }).catch(() => undefined);
+  }
+  return response.ok;
+}
+
+export function startRealtimeGreeting(callId: string) {
+  return new Promise<void>((resolve) => {
+    if (!process.env.OPENAI_API_KEY) {
+      resolve();
+      return;
+    }
+
+    const socket = new WebSocket(
+      `wss://api.openai.com/v1/realtime?call_id=${encodeURIComponent(callId)}`,
+      { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` } },
+    );
+    const finish = () => {
+      clearTimeout(timeout);
+      try {
+        socket.close();
+      } catch {
+        // The call can close before the sideband connection does.
+      }
+      resolve();
+    };
+    const timeout = setTimeout(finish, 12_000);
+
+    socket.on("open", () => {
+      socket.send(JSON.stringify({
+        type: "response.create",
+        response: {
+          instructions: "Greet the caller now. Say exactly: Hi, this is June from Juniper & Stone. How are you doing today, and what can I get started for you?",
+        },
+      }));
+    });
+    socket.on("message", (data) => {
+      try {
+        const event = JSON.parse(data.toString()) as { type?: string };
+        if (event.type === "response.done") finish();
+      } catch {
+        // Ignore unrelated or malformed sideband events.
+      }
+    });
+    socket.on("error", finish);
+    socket.on("close", finish);
+  });
 }
