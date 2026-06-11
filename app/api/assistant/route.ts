@@ -17,7 +17,11 @@ export async function POST(request: Request) {
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const menuContext = menu
     .filter((item) => item.available)
-    .map((item) => `${item.name} (${item.category}) - $${item.price.toFixed(2)}: ${item.description}${item.vegetarian ? " [vegetarian]" : ""}`)
+    .map((item) => `${item.name} (${item.category}) - $${item.price.toFixed(2)}
+Ingredients: ${item.ingredients.join(", ")}
+Allergens: ${item.allergens.length ? item.allergens.join(", ") : "none listed"}
+${item.glutenFree ? "Prepared without gluten-containing ingredients, but cross-contact is possible." : ""}
+${item.vegetarian ? "Vegetarian." : ""}`)
     .join("\n");
 
   try {
@@ -25,8 +29,9 @@ export async function POST(request: Request) {
       model: process.env.OPENAI_MODEL || "gpt-5.5",
       instructions: `You are June, a concise and warm restaurant ordering assistant for Juniper & Stone.
 Help guests choose only from the menu below. Mention exact item names and prices. Respect dietary
-preferences, never invent ingredients, and remind guests with severe allergies to confirm with the
-restaurant. Treat the guest's latest message as the current preference, even when it contradicts
+preferences, use only the provided ingredient and allergen data, and never claim an item is safe
+from cross-contact. For any allergy, clearly flag the concern and remind the guest to confirm with
+the restaurant. Treat the guest's latest message as the current preference, even when it contradicts
 an earlier request. Vary recommendations across the menu. When suggesting a meal, explicitly ask
 whether you should add the named item or items to the order. Keep each answer under 80 words.
 

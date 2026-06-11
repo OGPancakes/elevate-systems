@@ -12,6 +12,9 @@ export type MenuItem = {
   accent: string;
   initials: string;
   image: string;
+  ingredients: string[];
+  allergens: string[];
+  glutenFree?: boolean;
 };
 
 export type CartItem = MenuItem & {
@@ -27,6 +30,9 @@ export type Order = {
   phone: string;
   email?: string;
   type: "Pickup" | "Delivery";
+  address?: string;
+  notes?: string;
+  allergyNotes?: string;
   items: { name: string; quantity: number; notes?: string }[];
   total: number;
   status: OrderStatus;

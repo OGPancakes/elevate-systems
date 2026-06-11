@@ -2,6 +2,7 @@
 
 import {
   Activity,
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Bot,
@@ -13,6 +14,7 @@ import {
   Headphones,
   LayoutDashboard,
   ListChecks,
+  MapPin,
   Menu as MenuIcon,
   MessageCircle,
   Minus,
@@ -67,6 +69,8 @@ export default function Home() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [orderNotes, setOrderNotes] = useState("");
+  const [allergyNotes, setAllergyNotes] = useState("");
 
   useEffect(() => {
     const adminPath = window.location.pathname.includes("elevateorders-admin");
@@ -135,7 +139,15 @@ export default function Home() {
     );
   };
 
-  const placeOrder = (customer: { name: string; phone: string; email: string; type: "Pickup" | "Delivery" }) => {
+  const placeOrder = (customer: {
+    name: string;
+    phone: string;
+    email: string;
+    type: "Pickup" | "Delivery";
+    address: string;
+    notes: string;
+    allergyNotes: string;
+  }) => {
     const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const now = new Date();
     const promise = new Date(now.getTime() + (customer.type === "Delivery" ? 40 : 20) * 60000);
@@ -145,6 +157,9 @@ export default function Home() {
       phone: customer.phone,
       email: customer.email,
       type: customer.type,
+      address: customer.type === "Delivery" ? customer.address : undefined,
+      notes: customer.notes || undefined,
+      allergyNotes: customer.allergyNotes || undefined,
       items: cart.map(({ name, quantity, notes }) => ({ name, quantity, notes })),
       total: subtotal * 1.08,
       status: "New",
@@ -154,6 +169,8 @@ export default function Home() {
     };
     setOrders((current) => [order, ...current]);
     setCart([]);
+    setOrderNotes("");
+    setAllergyNotes("");
   };
 
   if (isAdminPath && !adminAuthenticated) {
@@ -190,6 +207,8 @@ export default function Home() {
           <AssistantPanel
             menu={menu}
             addItem={addItem}
+            allergyNotes={allergyNotes}
+            setAllergyNotes={setAllergyNotes}
             openCheckout={() => {
               setAssistantOpen(false);
               setCheckoutOpen(true);
@@ -208,6 +227,8 @@ export default function Home() {
         {checkoutOpen && (
           <CheckoutModal
             cart={cart}
+            initialNotes={orderNotes}
+            initialAllergyNotes={allergyNotes}
             close={() => setCheckoutOpen(false)}
             placeOrder={placeOrder}
           />
@@ -396,7 +417,23 @@ function Storefront({
   );
 }
 
-function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { menu: MenuItem[]; addItem: (item: MenuItem) => void; openCheckout: () => void; onActivity: (detail: string) => void; close: () => void }) {
+function AssistantPanel({
+  menu,
+  addItem,
+  allergyNotes,
+  setAllergyNotes,
+  openCheckout,
+  onActivity,
+  close,
+}: {
+  menu: MenuItem[];
+  addItem: (item: MenuItem) => void;
+  allergyNotes: string;
+  setAllergyNotes: (notes: string) => void;
+  openCheckout: () => void;
+  onActivity: (detail: string) => void;
+  close: () => void;
+}) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: "assistant", content: "Hi, I’m June. Tell me what you’re in the mood for, and I’ll help build your order." },
   ]);
@@ -407,6 +444,28 @@ function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { me
   const [bundleAdded, setBundleAdded] = useState(false);
   const [addedRecommendation, setAddedRecommendation] = useState<string | null>(null);
   const suggestions = ["Something spicy", "A filling vegetarian meal", "A meaty meal under $20", "Lunch under $20"];
+
+  const ingredientAnswer = (text: string) => {
+    const lower = text.toLowerCase();
+    const item = menu.find((menuItem) => lower.includes(menuItem.name.toLowerCase()))
+      ?? menu.find((menuItem) => menuItem.name.toLowerCase().split(" ").some((word) => word.length > 4 && lower.includes(word)));
+    if (!item || !/\b(ingredient|allergen|allergy|contain|gluten|dairy|egg|nut|soy|sesame)\b/i.test(text)) return undefined;
+
+    const allergens = item.allergens.length ? item.allergens.join(", ") : "no listed major allergens";
+    return `${item.name} is made with ${item.ingredients.join(", ")}. Listed allergens: ${allergens}. ${
+      item.glutenFree ? "It does not contain a listed gluten ingredient" : "It is not listed as gluten-free"
+    }, but the restaurant must still confirm cross-contact safety for any allergy.`;
+  };
+
+  const captureAllergy = (text: string) => {
+    if (!/\b(allerg(?:y|ic)|celiac|cannot have|can't have|avoid|intoleran)\b/i.test(text)) return;
+    const known = ["gluten", "dairy", "milk", "egg", "peanut", "tree nut", "soy", "sesame", "wheat", "shellfish"];
+    const found = known.filter((allergen) => text.toLowerCase().includes(allergen));
+    const label = found.length ? found.join(", ").toUpperCase() : "GUEST-REPORTED";
+    const note = `${label} ALLERGY / DIETARY ALERT - confirm ingredients and prevent cross-contact with the guest.`;
+    setAllergyNotes(note);
+    onActivity(`June captured an allergy alert: ${label}`);
+  };
 
   const addRecommendedBundle = () => {
     if (!recommendedItems.length) return;
@@ -483,6 +542,7 @@ function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { me
     onActivity(`Guest said: "${text.slice(0, 62)}${text.length > 62 ? "..." : ""}"`);
     setInput("");
     setItemsAdded(false);
+    captureAllergy(text);
 
     const confirmation = /^(yes|yeah|yep|sure|okay|ok|add|do it|sounds good|i'll take|ill take|that works)/i.test(text.trim())
       || /\b(add both|add them|add it|place the order|checkout)\b/i.test(text);
@@ -492,6 +552,12 @@ function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { me
     }
 
     const conversationText = nextMessages.filter((message) => message.role === "user").map((message) => message.content).join(" ");
+    const ingredients = ingredientAnswer(text);
+    if (ingredients) {
+      setRecommendedItems([]);
+      setMessages((current) => [...current, { role: "assistant", content: ingredients }]);
+      return;
+    }
     const mealResponse = buildMealResponse(text, conversationText);
     if (mealResponse) {
       setRecommendedItems(mealResponse.items);
@@ -532,6 +598,7 @@ function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { me
           <span className="eyebrow"><Sparkles size={13} /> PERSONALIZED FOR YOU</span>
           <h2>What sounds good?</h2>
           <p>Ask about ingredients, dietary needs, or let me build your whole meal.</p>
+          {allergyNotes && <div className="assistant-allergy"><AlertTriangle size={15} /><span><b>Allergy alert saved</b>{allergyNotes}</span></div>}
         </div>
         <div className="messages">
           {messages.map((message, index) => (
@@ -576,8 +643,36 @@ function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { me
   );
 }
 
-function CheckoutModal({ cart, close, placeOrder }: { cart: CartItem[]; close: () => void; placeOrder: (customer: { name: string; phone: string; email: string; type: "Pickup" | "Delivery" }) => void }) {
-  const [customer, setCustomer] = useState({ name: "", phone: "", email: "", type: "Pickup" as "Pickup" | "Delivery" });
+function CheckoutModal({
+  cart,
+  initialNotes,
+  initialAllergyNotes,
+  close,
+  placeOrder,
+}: {
+  cart: CartItem[];
+  initialNotes: string;
+  initialAllergyNotes: string;
+  close: () => void;
+  placeOrder: (customer: {
+    name: string;
+    phone: string;
+    email: string;
+    type: "Pickup" | "Delivery";
+    address: string;
+    notes: string;
+    allergyNotes: string;
+  }) => void;
+}) {
+  const [customer, setCustomer] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    type: "Pickup" as "Pickup" | "Delivery",
+    address: "",
+    notes: initialNotes,
+    allergyNotes: initialAllergyNotes,
+  });
   const [stage, setStage] = useState<"form" | "processing" | "success">("form");
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const submit = (event: React.FormEvent) => {
@@ -596,8 +691,8 @@ function CheckoutModal({ cart, close, placeOrder }: { cart: CartItem[]; close: (
           <div className="order-loader"><span /><span /><span /><CookingPot /></div>
           <span className="eyebrow">SENDING TO THE KITCHEN</span>
           <h2>Making it official...</h2>
-          <p>June is double-checking your order and reserving your pickup time.</p>
-          <div className="processing-steps"><span className="done"><Check /> Order checked</span><span className="active"><Radio /> Kitchen connected</span><span><Clock3 /> Pickup time reserved</span></div>
+          <p>June is double-checking your order and reserving your {customer.type.toLowerCase()} time.</p>
+          <div className="processing-steps"><span className="done"><Check /> Order checked</span><span className="active"><Radio /> Kitchen connected</span><span><Clock3 /> {customer.type} time reserved</span></div>
         </div>
       </div>
     );
@@ -611,8 +706,8 @@ function CheckoutModal({ cart, close, placeOrder }: { cart: CartItem[]; close: (
           <div className="success-ring"><Check /></div>
           <span className="eyebrow">ORDER RECEIVED</span>
           <h2>You&apos;re all set, {customer.name.split(" ")[0]}!</h2>
-          <p>The kitchen has your order. We&apos;ll have it ready in about <b>20 minutes</b>.</p>
-          <div className="success-ticket"><span>Pickup at</span><b>Juniper &amp; Stone</b><small>18 Oak Street · Text updates sent to {customer.phone}</small></div>
+          <p>The kitchen has your order. {customer.type === "Delivery" ? <>We&apos;ll send it out in about <b>40 minutes</b>.</> : <>We&apos;ll have it ready in about <b>20 minutes</b>.</>}</p>
+          <div className="success-ticket"><span>{customer.type === "Delivery" ? "Delivering to" : "Pickup at"}</span><b>{customer.type === "Delivery" ? customer.address : "Juniper & Stone"}</b><small>{customer.type === "Delivery" ? "Juniper & Stone" : "18 Oak Street"} · Text updates sent to {customer.phone}</small></div>
           <button className="primary-button" onClick={close}>Back to the menu <Sparkles size={17} /></button>
         </div>
       </div>
@@ -630,6 +725,11 @@ function CheckoutModal({ cart, close, placeOrder }: { cart: CartItem[]; close: (
           <label>Phone<input required value={customer.phone} onChange={(event) => setCustomer({ ...customer, phone: event.target.value })} placeholder="(555) 123-4567" /></label>
           <label>Email<input type="email" value={customer.email} onChange={(event) => setCustomer({ ...customer, email: event.target.value })} placeholder="jordan@email.com" /></label>
         </div>
+        {customer.type === "Delivery" && (
+          <label className="delivery-address"><span><MapPin size={14} /> Delivery address</span><input required value={customer.address} onChange={(event) => setCustomer({ ...customer, address: event.target.value })} placeholder="123 Main Street, Apt 4B" /></label>
+        )}
+        <label>Order notes<textarea value={customer.notes} onChange={(event) => setCustomer({ ...customer, notes: event.target.value })} placeholder="Gate code, substitutions, or kitchen requests" /></label>
+        <label className="allergy-field"><span><AlertTriangle size={14} /> Allergies or dietary restrictions</span><textarea value={customer.allergyNotes} onChange={(event) => setCustomer({ ...customer, allergyNotes: event.target.value })} placeholder="Example: Gluten allergy - please prevent cross-contact" /></label>
         <div className="checkout-summary"><span>{cart.reduce((sum, item) => sum + item.quantity, 0)} items</span><span>Total with tax <b>{money.format(subtotal * 1.08)}</b></span></div>
         <button className="primary-button" type="submit">Place order <Check size={18} /></button>
         <p className="checkout-note">Demo checkout. Payment processing is planned for a future release.</p>
@@ -789,7 +889,9 @@ function Kitchen({ orders, setOrders }: { orders: Order[]; setOrders: React.Disp
               <div className="column-heading"><span><i /> {status}</span><b>{columnOrders.length}</b></div>
               {columnOrders.map((order) => (
                 <article className="ticket" key={order.id}>
-                  <div className="ticket-header"><div><span>{order.id}</span><h3>{order.customer}</h3></div><div><b>{order.promiseTime}</b><small>{order.type}</small></div></div>
+                  <div className="ticket-header"><div><span>{order.id}</span><h3>{order.customer}</h3>{order.address && <small><MapPin size={9} /> {order.address}</small>}</div><div><b>{order.promiseTime}</b><small>{order.type}</small></div></div>
+                  {order.allergyNotes && <div className="ticket-alert"><AlertTriangle size={16} /><span><b>ALLERGY ALERT</b>{order.allergyNotes}</span></div>}
+                  {order.notes && <div className="ticket-order-note"><b>ORDER NOTE</b><span>{order.notes}</span></div>}
                   <div className="ticket-items">
                     {order.items.map((item, index) => <div key={`${item.name}-${index}`}><b>{item.quantity}×</b><span>{item.name}{item.notes && <small>{item.notes}</small>}</span></div>)}
                   </div>
@@ -981,7 +1083,7 @@ function PhoneSetup() {
       <section className="phone-hero">
         <div>
           <span className="eyebrow">YOUR AI ORDER LINE</span>
-          <h2>(555) 014-0198</h2>
+          <h2>(908) 639-5394</h2>
           <p>June answers naturally, knows the current menu, confirms modifiers, collects customer details, and sends finished orders straight to the kitchen.</p>
           <div className="phone-actions">
             <button className="primary-button" onClick={() => setTestCall(true)}><PhoneCall size={17} /> Simulate incoming call</button>
@@ -1025,7 +1127,7 @@ function RestaurantSettings() {
   const [settings, setSettings] = useState({
     restaurant: "Juniper & Stone",
     address: "18 Oak Street",
-    phone: "(555) 014-0198",
+    phone: "(908) 639-5394",
     pickupMinutes: "20",
     acceptingOrders: true,
     aiAssistant: true,

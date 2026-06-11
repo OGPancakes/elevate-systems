@@ -12,6 +12,8 @@ export const menuItems: MenuItem[] = [
     accent: "#f1c6a8",
     initials: "IS",
     image: "/menu/italian-stack.jpg",
+    ingredients: ["Genoa salami", "capicola", "provolone", "shredded lettuce", "tomato", "red onion", "house vinaigrette", "sesame sub roll"],
+    allergens: ["Gluten", "Milk", "Sesame"],
   },
   {
     id: "turkey-club",
@@ -24,6 +26,8 @@ export const menuItems: MenuItem[] = [
     accent: "#b9d7c2",
     initials: "TC",
     image: "/menu/turkey-club.jpg",
+    ingredients: ["Roasted turkey", "applewood bacon", "cheddar", "lettuce", "tomato", "herb mayonnaise", "toasted country bread"],
+    allergens: ["Gluten", "Egg", "Milk"],
   },
   {
     id: "hot-honey-pie",
@@ -36,6 +40,8 @@ export const menuItems: MenuItem[] = [
     accent: "#e9a280",
     initials: "HH",
     image: "/menu/hot-honey-pie.jpg",
+    ingredients: ["Wheat pizza dough", "tomato sauce", "whole-milk mozzarella", "cup-and-char pepperoni", "pecorino", "hot honey"],
+    allergens: ["Gluten", "Milk"],
   },
   {
     id: "garden-pie",
@@ -48,6 +54,8 @@ export const menuItems: MenuItem[] = [
     accent: "#9fc0a3",
     initials: "GP",
     image: "/menu/garden-pie.jpg",
+    ingredients: ["Wheat pizza dough", "tomato sauce", "mozzarella", "roasted peppers", "mushrooms", "red onion", "black olives", "fresh basil"],
+    allergens: ["Gluten", "Milk"],
   },
   {
     id: "chicken-bowl",
@@ -60,6 +68,9 @@ export const menuItems: MenuItem[] = [
     accent: "#d8bd8a",
     initials: "CB",
     image: "/menu/chicken-bowl.jpg",
+    ingredients: ["Lemon-herb chicken", "seasoned rice", "cucumber", "tomato", "pickled red onion", "feta", "garlic yogurt sauce"],
+    allergens: ["Milk"],
+    glutenFree: true,
   },
   {
     id: "market-bowl",
@@ -72,6 +83,8 @@ export const menuItems: MenuItem[] = [
     accent: "#a8c6ad",
     initials: "MV",
     image: "/menu/market-bowl.jpg",
+    ingredients: ["Herbed farro", "roasted zucchini", "roasted peppers", "chickpeas", "mixed greens", "feta", "green goddess dressing"],
+    allergens: ["Gluten", "Milk", "Egg"],
   },
   {
     id: "garlic-knots",
@@ -83,6 +96,8 @@ export const menuItems: MenuItem[] = [
     accent: "#e6cf9b",
     initials: "GK",
     image: "/menu/garlic-knots-v2.jpg",
+    ingredients: ["Wheat dough", "garlic butter", "parmesan", "parsley", "marinara sauce"],
+    allergens: ["Gluten", "Milk"],
   },
   {
     id: "crispy-potatoes",
@@ -95,6 +110,9 @@ export const menuItems: MenuItem[] = [
     accent: "#d6b67c",
     initials: "CP",
     image: "/menu/crispy-potatoes.jpg",
+    ingredients: ["Yukon gold potatoes", "olive oil", "sea salt", "black pepper", "rosemary", "roasted garlic aioli"],
+    allergens: ["Egg"],
+    glutenFree: true,
   },
   {
     id: "blood-orange",
@@ -106,6 +124,9 @@ export const menuItems: MenuItem[] = [
     accent: "#e79f80",
     initials: "BO",
     image: "/menu/blood-orange.jpg",
+    ingredients: ["Carbonated water", "blood orange juice", "cane sugar", "citric acid"],
+    allergens: [],
+    glutenFree: true,
   },
 ];
 
@@ -124,6 +145,7 @@ export const initialOrders: Order[] = [
     placedAt: "11:42 AM",
     promiseTime: "12:02 PM",
     source: "AI Assistant",
+    allergyNotes: "GLUTEN ALLERGY - avoid cross-contact; use a clean prep area.",
   },
   {
     id: "EO-1047",
@@ -154,6 +176,8 @@ export const initialOrders: Order[] = [
     placedAt: "11:28 AM",
     promiseTime: "12:08 PM",
     source: "AI Assistant",
+    address: "42 Cedar Lane, Apt 3B",
+    notes: "Ring the side entrance bell.",
   },
   {
     id: "EO-1045",
