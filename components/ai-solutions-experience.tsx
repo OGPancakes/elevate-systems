@@ -252,9 +252,9 @@ export function AiSolutionsExperience({
                     <p className="mt-3 leading-7 text-white/55">{result.summary}</p>
                   </div>
                 </div>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <div className="mt-6 grid auto-rows-fr gap-3 sm:grid-cols-2">
                   {result.categories.map((category) => (
-                    <div className="border border-white/10 bg-black/20 p-4" key={category.label}>
+                    <div className="flex h-full flex-col border border-white/10 bg-black/20 p-4" key={category.label}>
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-sm font-medium text-white">{category.label}</p>
                         <span className={`text-sm font-semibold ${scoreColor(category.score)}`}>{category.score}</span>
@@ -262,7 +262,7 @@ export function AiSolutionsExperience({
                       <div className="mt-3 h-1 overflow-hidden bg-white/10">
                         <div className="h-full bg-sky-400" style={{ width: `${category.score}%` }} />
                       </div>
-                      <p className="mt-3 text-xs leading-5 text-white/40">{category.insight}</p>
+                      <p className="mt-3 flex-1 text-xs leading-5 text-white/40">{category.insight}</p>
                     </div>
                   ))}
                 </div>
@@ -299,11 +299,11 @@ export function AiSolutionsExperience({
           <h2 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">Choose the bottleneck. See the system.</h2>
           <p className="mt-5 leading-8 text-white/55">Explore practical ways AI can support customer communication and internal operations without replacing the human judgment your business depends on.</p>
         </div>
-        <div className="mt-10 grid gap-6 lg:grid-cols-[320px_1fr]">
-          <div className="space-y-2">
+        <div className="mt-10">
+          <div className="grid auto-rows-fr gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {aiSolutionServices.map((item, index) => (
               <button
-                className={`flex w-full items-center gap-3 border px-4 py-4 text-left transition ${index === activeService ? "border-sky-300/40 bg-sky-300/10 text-white" : "border-white/10 bg-white/[0.025] text-white/50 hover:border-white/20 hover:text-white"}`}
+                className={`flex min-h-16 w-full items-center gap-3 border px-4 py-4 text-left transition ${index === activeService ? "border-sky-300/40 bg-sky-300/10 text-white" : "border-white/10 bg-white/[0.025] text-white/50 hover:border-white/20 hover:text-white"}`}
                 key={item.id}
                 onClick={() => setActiveService(index)}
                 type="button"
@@ -314,15 +314,15 @@ export function AiSolutionsExperience({
               </button>
             ))}
           </div>
-          <div className="dashboard-grid relative min-h-[430px] overflow-hidden border border-white/10 bg-[#07101d] p-6 sm:p-10">
+          <div className="dashboard-grid relative mt-4 min-h-[400px] overflow-hidden border border-white/10 bg-[#07101d] p-6 sm:p-10">
             <div className="absolute right-0 top-0 h-px w-2/3 bg-gradient-to-r from-transparent to-sky-300/50" />
             <service.icon className="h-10 w-10 text-sky-300" />
             <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">System {String(activeService + 1).padStart(2, "0")}</p>
             <h3 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">{service.title}</h3>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-white/60">{service.description}</p>
-            <div className="mt-8 grid gap-px bg-white/10 sm:grid-cols-3">
+            <div className="mt-8 grid auto-rows-fr gap-px bg-white/10 sm:grid-cols-3">
               {service.signals.map((signal) => (
-                <div className="bg-[#091321] p-4 text-sm text-white/65" key={signal}>
+                <div className="flex h-full flex-col bg-[#091321] p-4 text-sm text-white/65" key={signal}>
                   <Check className="mb-3 h-4 w-4 text-emerald-300" />
                   {signal}
                 </div>
@@ -393,15 +393,15 @@ export function AiSolutionsExperience({
           <h2 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">Start focused. Expand when the system proves useful.</h2>
           <p className="mt-5 leading-8 text-white/55">Clear starting points for common implementations. Final scope is confirmed before work begins.</p>
         </div>
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+        <div className="mt-10 grid auto-rows-fr gap-4 md:grid-cols-2 lg:grid-cols-3">
           {solutionTiers.map((tier) => (
-            <article className={`relative border p-6 ${tier.featured ? "border-sky-300/50 bg-sky-300/[0.07]" : "border-white/10 bg-white/[0.025]"}`} key={tier.id}>
+            <article className={`relative flex h-full flex-col border p-6 ${tier.featured ? "border-sky-300/50 bg-sky-300/[0.07]" : "border-white/10 bg-white/[0.025]"}`} key={tier.id}>
               {tier.featured ? <span className="absolute right-4 top-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-300">Most complete</span> : null}
               <h3 className="text-xl font-semibold text-white">{tier.name}</h3>
               <p className="mt-5 text-4xl font-semibold text-white">{tier.price}</p>
               <p className="mt-2 text-xs text-white/35">{tier.suffix}</p>
               <p className="mt-5 min-h-20 leading-7 text-white/55">{tier.description}</p>
-              <ul className="mt-6 space-y-3">
+              <ul className="mt-6 flex-1 space-y-3">
                 {tier.features.map((feature) => (
                   <li className="flex gap-3 text-sm text-white/65" key={feature}><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />{feature}</li>
                 ))}
