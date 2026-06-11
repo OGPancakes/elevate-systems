@@ -34,7 +34,7 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { initialOrders, menuItems as initialMenu } from "@/lib/elevate-orders-data";
 import type { CartItem, ChatMessage, MenuCategory, MenuItem, Order, OrderStatus } from "@/lib/elevate-orders-types";
 
@@ -252,6 +252,7 @@ function Storefront({
   const [query, setQuery] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
   const [addedItem, setAddedItem] = useState<string | null>(null);
+  const [cartPulse, setCartPulse] = useState(false);
   const filtered = menu.filter(
     (item) =>
       item.available &&
@@ -259,7 +260,17 @@ function Storefront({
       `${item.name} ${item.description}`.toLowerCase().includes(query.toLowerCase()),
   );
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const previousItemCount = useRef(itemCount);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  useEffect(() => {
+    if (itemCount > previousItemCount.current) {
+      setCartPulse(true);
+      const timer = window.setTimeout(() => setCartPulse(false), 700);
+      previousItemCount.current = itemCount;
+      return () => window.clearTimeout(timer);
+    }
+    previousItemCount.current = itemCount;
+  }, [itemCount]);
   const addWithAnimation = (item: MenuItem) => {
     addItem(item);
     setAddedItem(item.id);
@@ -279,7 +290,7 @@ function Storefront({
         <div className="header-actions">
           <a className="call-order-link" href="tel:+15550140198"><Phone size={15} /><span>Call to order</span><b>(555) 014-0198</b></a>
           <button className="text-button" onClick={openDashboard}>Restaurant login</button>
-          <button className="cart-button" aria-label={`Open my order, ${itemCount} ${itemCount === 1 ? "item" : "items"}`} onClick={() => setCartOpen(!cartOpen)}>
+          <button className={`cart-button ${cartPulse ? "cart-pulse" : ""}`} aria-label={`Open my order, ${itemCount} ${itemCount === 1 ? "item" : "items"}`} onClick={() => setCartOpen(!cartOpen)}>
             <ShoppingBag size={18} />
             <span>My order</span>
             <b>{itemCount}</b>
@@ -393,18 +404,24 @@ function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { me
   const [loading, setLoading] = useState(false);
   const [recommendedItems, setRecommendedItems] = useState<MenuItem[]>([]);
   const [itemsAdded, setItemsAdded] = useState(false);
+  const [bundleAdded, setBundleAdded] = useState(false);
+  const [addedRecommendation, setAddedRecommendation] = useState<string | null>(null);
   const suggestions = ["Something spicy", "A filling vegetarian meal", "A meaty meal under $20", "Lunch under $20"];
 
   const addRecommendedBundle = () => {
     if (!recommendedItems.length) return;
     recommendedItems.forEach(addItem);
     setItemsAdded(true);
+    setBundleAdded(true);
     setMessages((current) => [...current, {
       role: "assistant",
       content: `Done. I added ${recommendedItems.map((item) => item.name).join(" and ")} to your order. You can review the cart or head straight to checkout.`,
     }]);
     onActivity(`June added ${recommendedItems.length} item${recommendedItems.length > 1 ? "s" : ""} to the guest's cart`);
-    setRecommendedItems([]);
+    window.setTimeout(() => {
+      setRecommendedItems([]);
+      setBundleAdded(false);
+    }, 650);
   };
 
   const chooseItems = (text: string, responseText = "") => {
@@ -527,14 +544,21 @@ function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { me
                 <div className="recommendation-card" key={item.id}>
                   <Image className="recommendation-image" src={item.image} alt="" width={52} height={52} />
                   <div><b>{item.name}</b><span>{money.format(item.price)}</span></div>
-                  <button onClick={() => { addItem(item); setItemsAdded(true); }}><Plus size={16} /> Add</button>
+                  <button className={addedRecommendation === item.id ? "added" : ""} onClick={() => {
+                    addItem(item);
+                    setItemsAdded(true);
+                    setAddedRecommendation(item.id);
+                    window.setTimeout(() => setAddedRecommendation(null), 700);
+                  }}>{addedRecommendation === item.id ? <Check size={16} /> : <Plus size={16} />} {addedRecommendation === item.id ? "Added" : "Add"}</button>
                 </div>
               ))}
               <div className="recommendation-total">
                 <span>Suggested total</span>
                 <b>{money.format(recommendedItems.reduce((sum, item) => sum + item.price, 0))}</b>
               </div>
-              <button className="add-meal-button" onClick={addRecommendedBundle}><Plus size={16} /> Add suggested meal</button>
+              <button className={`add-meal-button ${bundleAdded ? "added" : ""}`} onClick={addRecommendedBundle}>
+                {bundleAdded ? <Check size={16} /> : <Plus size={16} />} {bundleAdded ? "Meal added" : "Add suggested meal"}
+              </button>
             </div>
           )}
           {itemsAdded && <button className="assistant-checkout" onClick={openCheckout}>Review and checkout <ArrowRight size={16} /></button>}

@@ -6,7 +6,9 @@ import Link from "next/link";
 import {
   ArrowRight,
   Bot,
+  BriefcaseBusiness,
   ChevronDown,
+  Layers3,
   Menu,
   ScanSearch,
   SlidersHorizontal,
@@ -16,10 +18,24 @@ import {
 import { Button } from "@/components/ui/button";
 
 const standardNav = [
-  { label: "Services", href: "/services" },
   { label: "Pricing", href: "/pricing" },
   { label: "Proof", href: "/proof" },
   { label: "Contact", href: "/#contact" }
+];
+
+const exploreNav = [
+  {
+    label: "Services",
+    description: "Websites, automation, CRM, and connected business systems.",
+    href: "/services",
+    icon: BriefcaseBusiness
+  },
+  {
+    label: "Product Demos",
+    description: "Step inside Elevate Orders and the growing product family.",
+    href: "/demos",
+    icon: Layers3
+  }
 ];
 
 const aiNav = [
@@ -45,6 +61,7 @@ const aiNav = [
 
 export function SiteHeader() {
   const [aiOpen, setAiOpen] = useState(false);
+  const [exploreOpen, setExploreOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +69,7 @@ export function SiteHeader() {
     function closeOnOutsideClick(event: MouseEvent) {
       if (!navRef.current?.contains(event.target as Node)) {
         setAiOpen(false);
+        setExploreOpen(false);
       }
     }
     document.addEventListener("mousedown", closeOnOutsideClick);
@@ -77,20 +95,23 @@ export function SiteHeader() {
             <button
               aria-expanded={aiOpen}
               className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-white/60 transition hover:bg-white/10 hover:text-white"
-              onClick={() => setAiOpen((value) => !value)}
+              onClick={() => {
+                setAiOpen((value) => !value);
+                setExploreOpen(false);
+              }}
               type="button"
             >
               AI
               <ChevronDown className={`h-4 w-4 transition ${aiOpen ? "rotate-180" : ""}`} />
             </button>
             <div
-              className={`absolute left-0 top-[calc(100%+0.75rem)] w-80 origin-top-left border border-white/10 bg-[#07101d]/95 p-2 shadow-2xl backdrop-blur-xl transition duration-200 ${
-                aiOpen ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
+              className={`nav-dropdown absolute left-0 top-[calc(100%+0.75rem)] w-80 origin-top-left border border-white/10 bg-[#07101d]/95 p-2 shadow-2xl backdrop-blur-xl ${
+                aiOpen ? "pointer-events-auto translate-y-0 scale-100 opacity-100" : "pointer-events-none -translate-y-2 scale-95 opacity-0"
               }`}
             >
               {aiNav.map((item) => (
                 <Link
-                  className="group flex gap-3 p-3 transition hover:bg-white/[0.06]"
+                  className="nav-dropdown-item group flex gap-3 p-3"
                   href={item.href}
                   key={item.label}
                   onClick={() => setAiOpen(false)}
@@ -106,9 +127,42 @@ export function SiteHeader() {
               ))}
             </div>
           </div>
-          <Link className="nav-motion rounded-md px-3 py-2 text-sm text-white/60 hover:bg-white/10 hover:text-white" href="/demos">
-            Demos
-          </Link>
+          <div className="relative">
+            <button
+              aria-expanded={exploreOpen}
+              className="nav-motion flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-white/60 hover:bg-white/10 hover:text-white"
+              onClick={() => {
+                setExploreOpen((value) => !value);
+                setAiOpen(false);
+              }}
+              type="button"
+            >
+              Explore
+              <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${exploreOpen ? "rotate-180" : ""}`} />
+            </button>
+            <div
+              className={`nav-dropdown absolute left-0 top-[calc(100%+0.75rem)] w-80 origin-top-left border border-white/10 bg-[#07101d]/95 p-2 shadow-2xl backdrop-blur-xl ${
+                exploreOpen ? "pointer-events-auto translate-y-0 scale-100 opacity-100" : "pointer-events-none -translate-y-2 scale-95 opacity-0"
+              }`}
+            >
+              {exploreNav.map((item) => (
+                <Link
+                  className="nav-dropdown-item group flex gap-3 p-3"
+                  href={item.href}
+                  key={item.label}
+                  onClick={() => setExploreOpen(false)}
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-sky-300/15 bg-sky-300/[0.06] text-sky-300">
+                    <item.icon className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-medium text-white">{item.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-white/40">{item.description}</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
           {standardNav.map((item) => (
             <Link
               className="nav-motion rounded-md px-3 py-2 text-sm text-white/60 hover:bg-white/10 hover:text-white"
@@ -160,14 +214,21 @@ export function SiteHeader() {
               </span>
             </Link>
           ))}
-          <Link
-            className="block border-b border-white/10 px-3 py-4 text-sm font-medium text-white"
-            href="/demos"
-            onClick={() => setMobileOpen(false)}
-          >
-            Product Demos
-            <span className="mt-1 block text-xs font-normal text-white/40">Explore the Elevate product family.</span>
-          </Link>
+          <p className="px-3 pb-1 pt-5 text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">Explore</p>
+          {exploreNav.map((item) => (
+            <Link
+              className="mobile-nav-item flex items-center gap-3 border-b border-white/10 px-3 py-4"
+              href={item.href}
+              key={item.label}
+              onClick={() => setMobileOpen(false)}
+            >
+              <item.icon className="h-5 w-5 text-sky-300" />
+              <span>
+                <span className="block text-sm font-medium text-white">{item.label}</span>
+                <span className="mt-1 block text-xs text-white/40">{item.description}</span>
+              </span>
+            </Link>
+          ))}
           {standardNav.map((item) => (
             <Link
               className="block border-b border-white/10 px-3 py-4 text-sm text-white/70"

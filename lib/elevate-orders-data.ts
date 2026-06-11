@@ -82,7 +82,7 @@ export const menuItems: MenuItem[] = [
     available: true,
     accent: "#e6cf9b",
     initials: "GK",
-    image: "/menu/garlic-knots.jpg",
+    image: "/menu/garlic-knots-v2.jpg",
   },
   {
     id: "crispy-potatoes",
