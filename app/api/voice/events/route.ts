@@ -74,7 +74,7 @@ export async function POST(request: Request) {
   }
 
   const callSid = payload.CallSid || payload.callSid || `demo-${Date.now()}`;
-  const status = (payload.CallStatus || payload.status || "in-progress").toLowerCase();
+  const status = (payload.DialCallStatus || payload.CallStatus || payload.status || "in-progress").toLowerCase();
   const detail = payload.detail
     || (status === "ringing" ? "Incoming call is ringing"
       : status === "in-progress" ? "June answered and is taking the order"
