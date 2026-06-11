@@ -594,6 +594,10 @@ button:focus-visible, a:focus-visible { outline: 3px solid color-mix(in srgb, va
 @keyframes live-call-arrive { from { opacity: 0; transform: translateY(-10px) scale(.98); } }
 .transcript-line p { font-size: 9px; line-height: 1.55; padding: 10px 12px; border-radius: 10px; background: #f4f5f1; margin: 0; }
 .transcript-line b { display: block; margin-bottom: 3px; }
+.phone-feed-empty { min-height: 210px; display: grid; place-items: center; align-content: center; gap: 8px; padding: 28px; text-align: center; color: #75817a; }
+.phone-feed-empty svg { width: 34px; height: 34px; padding: 8px; border-radius: 50%; background: #e7eee9; color: var(--forest); }
+.phone-feed-empty b { color: var(--forest); font-family: var(--font-display); font-size: 18px; }
+.phone-feed-empty p { max-width: 290px; margin: 0; font-size: 10px; line-height: 1.6; }
 
 @media (max-width: 1250px) {
   .phone-hero { grid-template-columns: 1fr; }

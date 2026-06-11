@@ -127,18 +127,26 @@ export default function Home() {
     if (!isAdminPath) return;
     let active = true;
 
-    const syncVoiceEvents = async () => {
+    const syncPhoneActivity = async () => {
       try {
-        const response = await fetch("/api/voice/events", { cache: "no-store" });
-        const data = await response.json() as { events?: VoiceEvent[] };
+        const [eventResponse, orderResponse] = await Promise.all([
+          fetch("/api/voice/events", { cache: "no-store" }),
+          fetch("/api/voice/orders", { cache: "no-store" }),
+        ]);
+        const data = await eventResponse.json() as { events?: VoiceEvent[] };
+        const orderData = await orderResponse.json() as { orders?: Order[] };
         if (!active) return;
         const activeStatuses = new Set(["queued", "initiated", "ringing", "answered", "in-progress"]);
         const seenCalls = new Set<string>();
+        const newestStatusByCaller = new Map<string, string>();
+        for (const event of data.events ?? []) {
+          if (!newestStatusByCaller.has(event.from)) newestStatusByCaller.set(event.from, event.status);
+        }
         const callSessions = Array.from(
           (data.events ?? []).reduce((calls, event) => {
             if (seenCalls.has(event.callSid)) return calls;
             seenCalls.add(event.callSid);
-            if (activeStatuses.has(event.status)) {
+            if (activeStatuses.has(event.status) && newestStatusByCaller.get(event.from) !== "completed") {
               calls.set(event.callSid, {
                 id: `twilio-${event.callSid}`,
                 guest: event.from,
@@ -155,13 +163,19 @@ export default function Home() {
           ...callSessions,
           ...current.filter((session) => session.channel !== "Phone"),
         ].slice(0, 12));
+        if (orderData.orders?.length) {
+          setOrders((current) => {
+            const serverIds = new Set(orderData.orders?.map((order) => order.id));
+            return [...orderData.orders!, ...current.filter((order) => !serverIds.has(order.id))];
+          });
+        }
       } catch {
         // Keep the rest of the demo available if the voice event feed is offline.
       }
     };
 
-    syncVoiceEvents();
-    const timer = window.setInterval(syncVoiceEvents, 2000);
+    syncPhoneActivity();
+    const timer = window.setInterval(syncPhoneActivity, 2000);
     return () => {
       active = false;
       window.clearInterval(timer);
@@ -1212,13 +1226,17 @@ function PhoneSetup() {
           <div className="setup-step complete"><span><Check /></span><div><b>Live activity storage connected</b><p>Call status and guest speech appear across the operations dashboard.</p></div></div>
         </section>
         <section className="ops-card call-transcript">
-          <div className="card-heading"><div><span className="eyebrow">{voiceEvents.length ? "LIVE CALL FEED" : "SAMPLE CALL"}</span><h2>{voiceEvents.length ? "What June is hearing" : "What guests hear"}</h2></div></div>
+          <div className="card-heading"><div><span className="eyebrow">LIVE CALL FEED</span><h2>Realtime phone activity</h2></div></div>
           {voiceEvents.slice(0, 4).map((event) => (
             <div className="transcript-line live-call-line" key={event.id}><span><PhoneCall size={13} /></span><p><b>{event.from}</b>{event.detail}</p></div>
           ))}
-          <div className="transcript-line june"><span>J</span><p><b>June</b>Thanks for calling Juniper &amp; Stone. Are you ordering for pickup or delivery?</p></div>
-          <div className="transcript-line guest"><span>G</span><p><b>Guest</b>Pickup. I want something spicy and a side.</p></div>
-          <div className="transcript-line june"><span>J</span><p><b>June</b>The Hot Honey Pepperoni with Garlic Knots is a great match. Your total before tax is $26. Should I add both?</p></div>
+          {!voiceEvents.length && (
+            <div className="phone-feed-empty">
+              <PhoneCall />
+              <b>No call in progress</b>
+              <p>Call (908) 639-5394 and the live Realtime session will appear here.</p>
+            </div>
+          )}
         </section>
       </div>
     </>
