@@ -256,7 +256,7 @@ export async function processVoiceTurn(input: string, state: VoiceOrderState): P
         requiredMessage = "Almost done! What delivery address should I use?";
       } else {
         state.awaiting = "confirmation";
-        requiredMessage = `${orderSummary(state)}. Does everything sound right?`;
+        requiredMessage = `${orderSummary(state)} Does everything sound right?`;
       }
     }
   }
