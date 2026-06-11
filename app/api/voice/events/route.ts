@@ -23,6 +23,15 @@ const callerLabel = (phone: string) => {
   return digits.length >= 4 ? `Caller ending ${digits.slice(-4)}` : "New caller";
 };
 
+const isVoiceEvent = (value: unknown): value is VoiceEvent => {
+  if (!value || typeof value !== "object") return false;
+  const event = value as Partial<VoiceEvent>;
+  return Boolean(event.id && event.callSid && event.status && event.detail && event.createdAt);
+};
+
+const isShowcaseCall = (callSid: string) =>
+  !/^(CA-(?:PERSIST|DURABLE|PUBLIC|LIVE-DEMO)|demo-)/i.test(callSid);
+
 export async function GET() {
   let events = store.events.slice(0, 20);
 
@@ -40,7 +49,8 @@ export async function GET() {
           return null;
         }
       })
-      .filter((event): event is VoiceEvent => Boolean(event))
+      .filter(isVoiceEvent)
+      .filter((event) => isShowcaseCall(event.callSid))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, 20);
   } catch {
@@ -64,7 +74,7 @@ export async function POST(request: Request) {
   }
 
   const callSid = payload.CallSid || payload.callSid || `demo-${Date.now()}`;
-  const status = payload.CallStatus || payload.status || "in-progress";
+  const status = (payload.CallStatus || payload.status || "in-progress").toLowerCase();
   const detail = payload.detail
     || (status === "ringing" ? "Incoming call is ringing"
       : status === "in-progress" ? "June answered and is taking the order"

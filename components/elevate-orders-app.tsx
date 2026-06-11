@@ -72,7 +72,6 @@ export default function Home() {
   const [orders, setOrders] = useState(initialOrders);
   const [sessions, setSessions] = useState<LiveSession[]>([
     { id: "session-demo-1", guest: "Guest 184", channel: "AI chat", stage: "Chatting with June", detail: "Looking for a spicy dinner under $30", startedAt: "Just now" },
-    { id: "session-demo-2", guest: "Caller ending 4412", channel: "Phone", stage: "Calling", detail: "AI phone host is confirming a pickup order", startedAt: "1 min ago" },
     { id: "session-demo-3", guest: "Guest 097", channel: "Online", stage: "Reviewing cart", detail: "2 items · $26.00", startedAt: "3 min ago" },
   ]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -132,10 +131,14 @@ export default function Home() {
       try {
         const response = await fetch("/api/voice/events", { cache: "no-store" });
         const data = await response.json() as { events?: VoiceEvent[] };
-        if (!active || !data.events?.length) return;
+        if (!active) return;
+        const activeStatuses = new Set(["queued", "initiated", "ringing", "answered", "in-progress"]);
+        const seenCalls = new Set<string>();
         const callSessions = Array.from(
-          data.events.reduce((calls, event) => {
-            if (!calls.has(event.callSid)) {
+          (data.events ?? []).reduce((calls, event) => {
+            if (seenCalls.has(event.callSid)) return calls;
+            seenCalls.add(event.callSid);
+            if (activeStatuses.has(event.status)) {
               calls.set(event.callSid, {
                 id: `twilio-${event.callSid}`,
                 guest: event.from,
@@ -150,7 +153,7 @@ export default function Home() {
         ).map(([, session]) => session);
         setSessions((current) => [
           ...callSessions,
-          ...current.filter((session) => !session.id.startsWith("twilio-")),
+          ...current.filter((session) => session.channel !== "Phone"),
         ].slice(0, 12));
       } catch {
         // Keep the rest of the demo available if the voice event feed is offline.
@@ -1092,6 +1095,27 @@ function LiveSessionCard({ session }: { session: LiveSession }) {
 }
 
 function LiveActivity({ sessions, orders }: { sessions: LiveSession[]; orders: Order[] }) {
+  const [completedCalls, setCompletedCalls] = useState<VoiceEvent[]>([]);
+
+  useEffect(() => {
+    const loadCompletedCalls = async () => {
+      try {
+        const response = await fetch("/api/voice/events", { cache: "no-store" });
+        const data = await response.json() as { events?: VoiceEvent[] };
+        const latestByCall = new Map<string, VoiceEvent>();
+        for (const event of data.events ?? []) {
+          if (!latestByCall.has(event.callSid)) latestByCall.set(event.callSid, event);
+        }
+        setCompletedCalls(Array.from(latestByCall.values()).filter((event) => event.status === "completed").slice(0, 4));
+      } catch {
+        setCompletedCalls([]);
+      }
+    };
+    loadCompletedCalls();
+    const timer = window.setInterval(loadCompletedCalls, 3000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <>
       <PageHeader eyebrow="LIVE GUEST ACTIVITY" title="See the order before it lands.">
@@ -1108,7 +1132,14 @@ function LiveActivity({ sessions, orders }: { sessions: LiveSession[]; orders: O
           <div className="live-session-list">{sessions.map((session) => <LiveSessionCard session={session} key={session.id} />)}</div>
         </section>
         <section className="ops-card conversion-stream">
-          <div className="card-heading"><div><span className="eyebrow">RECENT CONVERSIONS</span><h2>Orders landing</h2></div></div>
+          <div className="card-heading"><div><span className="eyebrow">RECENT ACTIVITY</span><h2>Completed calls and orders</h2></div></div>
+          {completedCalls.map((call) => (
+            <div className="conversion-item completed-call" key={call.id}>
+              <span className="conversion-check"><PhoneCall /></span>
+              <div><b>{call.from}</b><small>{call.detail}</small></div>
+              <strong>Completed</strong>
+            </div>
+          ))}
           {orders.slice(0, 5).map((order) => (
             <div className="conversion-item" key={order.id}>
               <span className="conversion-check"><Check /></span>

@@ -406,6 +406,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid color-mix(in srgb, va
 .session-main p { color: var(--muted); font-size: 8px; line-height: 1.45; margin: 0; }
 .live-pulse { color: #4a8d5e; font-size: 7px; display: flex; align-items: center; gap: 4px; }
 .live-pulse i { width: 5px; height: 5px; border-radius: 50%; background: #55ad6c; box-shadow: 0 0 0 0 rgba(85,173,108,.5); animation: live-ping 1.5s infinite; }
+.completed-call { background: #f4f8f5; }
+.completed-call > strong { color: #3f7c55; font-size: 8px; }
 @keyframes live-ping { 60% { box-shadow: 0 0 0 7px rgba(85,173,108,0); } }
 .session-meta { text-align: right; display: grid; gap: 5px; }
 .session-meta span { font-size: 7px; font-weight: 800; color: var(--orange); }
