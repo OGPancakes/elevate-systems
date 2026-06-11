@@ -11,6 +11,7 @@ export type MenuItem = {
   available: boolean;
   accent: string;
   initials: string;
+  image: string;
 };
 
 export type CartItem = MenuItem & {

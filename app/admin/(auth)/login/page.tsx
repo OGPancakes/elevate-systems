@@ -21,7 +21,7 @@ export default async function AdminLoginPage({
             alt="Elevate Systems"
             className="h-20 w-20 object-contain"
             height={80}
-            src="/elevate-logo.png"
+            src="/elevate-logo-transparent.png"
             width={80}
             priority
           />

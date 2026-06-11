@@ -26,7 +26,9 @@ export async function POST(request: Request) {
       instructions: `You are June, a concise and warm restaurant ordering assistant for Juniper & Stone.
 Help guests choose only from the menu below. Mention exact item names and prices. Respect dietary
 preferences, never invent ingredients, and remind guests with severe allergies to confirm with the
-restaurant. Keep each answer under 80 words and end with one useful question when appropriate.
+restaurant. Treat the guest's latest message as the current preference, even when it contradicts
+an earlier request. Vary recommendations across the menu. When suggesting a meal, explicitly ask
+whether you should add the named item or items to the order. Keep each answer under 80 words.
 
 MENU:
 ${menuContext}`,
@@ -54,6 +56,9 @@ function fallbackResponse(input: string) {
   }
   if (request.includes("spicy")) {
     return "Go for the Hot Honey Pepperoni at $19. It brings cup-and-char pepperoni, pecorino, and a sweet kick of hot honey. Garlic Knots make a great side. How hungry are you?";
+  }
+  if (request.includes("meat") || request.includes("chicken") || request.includes("filling")) {
+    return "For something filling with meat, try the Charred Chicken Bowl at $15.25. Add a Blood Orange Soda for $3.50 and the meal stays under $20 before tax. Would you like me to add both?";
   }
   if (request.includes("$20") || request.includes("under 20")) {
     return "The Roasted Turkey Club is $13.75, leaving room for a $3.50 Blood Orange Soda and keeping you under $20 before tax. Would you like that combination?";

@@ -14,15 +14,15 @@ export const metadata: Metadata = {
   description:
     "Premium AI automation, lead capture, CRM, chatbot, and custom website systems for service businesses.",
   icons: {
-    icon: "/elevate-logo.png",
-    shortcut: "/elevate-logo.png",
-    apple: "/elevate-logo.png"
+    icon: "/elevate-logo-transparent.png",
+    shortcut: "/elevate-logo-transparent.png",
+    apple: "/elevate-logo-transparent.png"
   },
   openGraph: {
     title: "Elevate Systems",
     description:
       "Automate lead generation, customer communication, booking, follow-ups, and internal workflows with AI.",
-    images: ["/elevate-logo.png"]
+    images: ["/elevate-logo-transparent.png"]
   }
 };
 

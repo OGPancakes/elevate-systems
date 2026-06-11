@@ -34,11 +34,11 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { initialOrders, menuItems as initialMenu } from "@/lib/elevate-orders-data";
 import type { CartItem, ChatMessage, MenuCategory, MenuItem, Order, OrderStatus } from "@/lib/elevate-orders-types";
 
-type View = "storefront" | "overview" | "live" | "kitchen" | "orders" | "menu" | "phone" | "customers" | "analytics";
+type View = "storefront" | "overview" | "live" | "kitchen" | "orders" | "menu" | "phone" | "customers" | "analytics" | "settings";
 
 type LiveSession = {
   id: string;
@@ -77,7 +77,14 @@ export default function Home() {
     const storedMenu = localStorage.getItem("elevate-orders-menu");
     const storedSessions = localStorage.getItem("elevate-orders-sessions");
     if (storedOrders) setOrders(JSON.parse(storedOrders));
-    if (storedMenu) setMenu(JSON.parse(storedMenu));
+    if (storedMenu) {
+      const savedMenu = JSON.parse(storedMenu) as MenuItem[];
+      setMenu(initialMenu.map((defaultItem) => ({
+        ...defaultItem,
+        ...(savedMenu.find((item) => item.id === defaultItem.id) ?? {}),
+        image: defaultItem.image,
+      })));
+    }
     if (storedSessions) setSessions(JSON.parse(storedSessions));
     setDataLoaded(true);
     const sync = (event: StorageEvent) => {
@@ -183,6 +190,10 @@ export default function Home() {
           <AssistantPanel
             menu={menu}
             addItem={addItem}
+            openCheckout={() => {
+              setAssistantOpen(false);
+              setCheckoutOpen(true);
+            }}
             onActivity={(detail) => updateSession({
               id: "current-ai-guest",
               guest: "Live web guest",
@@ -215,6 +226,7 @@ export default function Home() {
       {view === "phone" && <PhoneSetup />}
       {view === "customers" && <Customers orders={orders} />}
       {view === "analytics" && <Analytics orders={orders} />}
+      {view === "settings" && <RestaurantSettings />}
     </OperationsShell>
   );
 }
@@ -258,7 +270,7 @@ function Storefront({
     <main className="storefront">
       <header className="store-header">
         <button className="brand-logo-button" aria-label="Elevate Orders home">
-          <Image className="brand-logo-image" src="/elevate-orders-logo.png" width={170} height={64} alt="Elevate Orders" priority />
+          <Image className="brand-logo-image" src="/elevate-orders-logo-transparent.png" width={170} height={64} alt="Elevate Orders" priority />
         </button>
         <div className="restaurant-name">
           <span className="open-dot" />
@@ -323,7 +335,7 @@ function Storefront({
           {filtered.map((item) => (
             <article className="menu-card" key={item.id}>
               <div className="food-visual" style={{ "--food-accent": item.accent } as React.CSSProperties}>
-                <span>{item.initials}</span>
+                <Image src={item.image} alt={item.name} fill sizes="(max-width: 760px) 100vw, 33vw" />
                 {item.popular && <b>Popular</b>}
               </div>
               <div className="menu-card-body">
@@ -349,7 +361,7 @@ function Storefront({
       </section>
 
       <footer className="store-footer">
-        <Image className="footer-logo-image" src="/elevate-orders-logo.png" width={170} height={70} alt="Elevate Orders" />
+        <Image className="footer-logo-image" src="/elevate-orders-logo-transparent.png" width={170} height={70} alt="Elevate Orders" />
         <p>Thoughtful ordering technology for neighborhood restaurants.</p>
         <span>Powered by Elevate Systems</span>
       </footer>
@@ -373,13 +385,47 @@ function Storefront({
   );
 }
 
-function AssistantPanel({ menu, addItem, onActivity, close }: { menu: MenuItem[]; addItem: (item: MenuItem) => void; onActivity: (detail: string) => void; close: () => void }) {
+function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { menu: MenuItem[]; addItem: (item: MenuItem) => void; openCheckout: () => void; onActivity: (detail: string) => void; close: () => void }) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: "assistant", content: "Hi, I’m June. Tell me what you’re in the mood for, and I’ll help build your order." },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const suggestions = ["Something spicy", "A filling vegetarian meal", "Lunch under $20"];
+  const [recommendedItems, setRecommendedItems] = useState<MenuItem[]>([]);
+  const [itemsAdded, setItemsAdded] = useState(false);
+  const suggestions = ["Something spicy", "A filling vegetarian meal", "Something filling with meat", "Lunch under $20"];
+
+  const addRecommendedBundle = () => {
+    if (!recommendedItems.length) return;
+    recommendedItems.forEach(addItem);
+    setItemsAdded(true);
+    setMessages((current) => [...current, {
+      role: "assistant",
+      content: `Done. I added ${recommendedItems.map((item) => item.name).join(" and ")} to your order. You can review the cart or head straight to checkout.`,
+    }]);
+    onActivity(`June added ${recommendedItems.length} item${recommendedItems.length > 1 ? "s" : ""} to the guest's cart`);
+    setRecommendedItems([]);
+  };
+
+  const chooseItems = (text: string, responseText = "") => {
+    const latest = text.toLowerCase();
+    const response = responseText.toLowerCase();
+    const mentioned = menu.filter((item) => response.includes(item.name.toLowerCase()));
+    if (mentioned.length) return mentioned.slice(0, 3);
+
+    if (latest.includes("spicy")) return menu.filter((item) => ["hot-honey-pie", "garlic-knots"].includes(item.id));
+    if (latest.includes("vegetarian") || latest.includes("veggie") || latest.includes("no meat")) {
+      return menu.filter((item) => ["market-bowl", "blood-orange"].includes(item.id));
+    }
+    if (latest.includes("meat") || latest.includes("chicken") || latest.includes("filling")) {
+      return menu.filter((item) => ["chicken-bowl", "blood-orange"].includes(item.id));
+    }
+    if (latest.includes("pizza")) return menu.filter((item) => ["hot-honey-pie", "garlic-knots"].includes(item.id));
+    if (latest.includes("sandwich") || latest.includes("lunch") || latest.includes("under 20") || latest.includes("$20")) {
+      return menu.filter((item) => ["turkey-club", "blood-orange"].includes(item.id));
+    }
+    return menu.filter((item) => ["italian-stack", "crispy-potatoes"].includes(item.id));
+  };
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
@@ -387,6 +433,15 @@ function AssistantPanel({ menu, addItem, onActivity, close }: { menu: MenuItem[]
     setMessages(nextMessages);
     onActivity(`Guest said: "${text.slice(0, 62)}${text.length > 62 ? "..." : ""}"`);
     setInput("");
+    setItemsAdded(false);
+
+    const confirmation = /^(yes|yeah|yep|sure|okay|ok|add|do it|sounds good|i'll take|ill take|that works)/i.test(text.trim())
+      || /\b(add both|add them|add it|place the order|checkout)\b/i.test(text);
+    if (confirmation && recommendedItems.length) {
+      addRecommendedBundle();
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch("/api/assistant", {
@@ -396,20 +451,16 @@ function AssistantPanel({ menu, addItem, onActivity, close }: { menu: MenuItem[]
       });
       const data = await response.json();
       setMessages((current) => [...current, { role: "assistant", content: data.message }]);
+      setRecommendedItems(chooseItems(text, data.message));
       onActivity(`June recommended a menu match for "${text.slice(0, 38)}"`);
     } catch {
-      setMessages((current) => [...current, { role: "assistant", content: "I recommend the Hot Honey Pepperoni with Garlic Knots. It is bold, a little spicy, and comes to $26 before tax." }]);
+      const matches = chooseItems(text);
+      setRecommendedItems(matches);
+      setMessages((current) => [...current, { role: "assistant", content: `I would go with ${matches.map((item) => item.name).join(" and ")}. Would you like me to add ${matches.length > 1 ? "both" : "it"} to your order?` }]);
     } finally {
       setLoading(false);
     }
   };
-
-  const recommendedItem = useMemo(() => {
-    const conversation = messages.map((message) => message.content).join(" ").toLowerCase();
-    if (conversation.includes("vegetarian")) return menu.find((item) => item.id === "market-bowl");
-    if (conversation.includes("spicy")) return menu.find((item) => item.id === "hot-honey-pie");
-    return undefined;
-  }, [messages, menu]);
 
   return (
     <div className="panel-backdrop" onMouseDown={close}>
@@ -429,13 +480,23 @@ function AssistantPanel({ menu, addItem, onActivity, close }: { menu: MenuItem[]
             <div className={`message ${message.role}`} key={`${message.role}-${index}`}>{message.content}</div>
           ))}
           {loading && <div className="message assistant typing"><span /><span /><span /></div>}
-          {recommendedItem && (
-            <div className="recommendation-card">
-              <div className="mini-food" style={{ background: recommendedItem.accent }}>{recommendedItem.initials}</div>
-              <div><b>{recommendedItem.name}</b><span>{money.format(recommendedItem.price)}</span></div>
-              <button onClick={() => addItem(recommendedItem)}><Plus size={16} /> Add</button>
+          {recommendedItems.length > 0 && (
+            <div className="recommendation-stack">
+              {recommendedItems.map((item) => (
+                <div className="recommendation-card" key={item.id}>
+                  <Image className="recommendation-image" src={item.image} alt="" width={52} height={52} />
+                  <div><b>{item.name}</b><span>{money.format(item.price)}</span></div>
+                  <button onClick={() => { addItem(item); setItemsAdded(true); }}><Plus size={16} /> Add</button>
+                </div>
+              ))}
+              <div className="recommendation-total">
+                <span>Suggested total</span>
+                <b>{money.format(recommendedItems.reduce((sum, item) => sum + item.price, 0))}</b>
+              </div>
+              <button className="add-meal-button" onClick={addRecommendedBundle}><Plus size={16} /> Add suggested meal</button>
             </div>
           )}
+          {itemsAdded && <button className="assistant-checkout" onClick={openCheckout}>Review and checkout <ArrowRight size={16} /></button>}
         </div>
         <div className="suggestion-chips">
           {suggestions.map((suggestion) => <button onClick={() => sendMessage(suggestion)} key={suggestion}>{suggestion}</button>)}
@@ -529,7 +590,7 @@ function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
       <div className="login-glow glow-one" />
       <div className="login-glow glow-two" />
       <form className="login-card" onSubmit={submit}>
-        <Image className="login-logo-image" src="/elevate-orders-logo.png" width={280} height={150} alt="Elevate Orders" priority />
+        <Image className="login-logo-image" src="/elevate-orders-logo-transparent.png" width={280} height={150} alt="Elevate Orders" priority />
         <span className="eyebrow">RESTAURANT COMMAND CENTER</span>
         <h1>Welcome to service.</h1>
         <p>Sign in to watch guests order, manage the kitchen, and keep every channel moving.</p>
@@ -555,7 +616,7 @@ function OperationsShell({ view, setView, orderCount, sessionCount, children }: 
   return (
     <main className="ops-shell">
       <aside className="ops-sidebar">
-        <Image className="sidebar-logo-image" src="/elevate-orders-logo.png" width={170} height={78} alt="Elevate Orders" />
+        <Image className="sidebar-logo-image" src="/elevate-orders-logo-transparent.png" width={170} height={78} alt="Elevate Orders" />
         <div className="location-switcher"><span>JS</span><div><b>Juniper &amp; Stone</b><small>18 Oak Street</small></div><ChevronRight size={16} /></div>
         <nav>
           <span className="nav-label">OPERATIONS</span>
@@ -563,9 +624,9 @@ function OperationsShell({ view, setView, orderCount, sessionCount, children }: 
           <span className="nav-label">BUSINESS</span>
           <button className={view === "customers" ? "active" : ""} onClick={() => setView("customers")}><Users size={19} /><span>Customers</span></button>
           <button className={view === "analytics" ? "active" : ""} onClick={() => setView("analytics")}><TrendingUp size={19} /><span>Analytics</span></button>
+          <button className={view === "settings" ? "active" : ""} onClick={() => setView("settings")}><Settings size={19} /><span>Settings</span></button>
         </nav>
         <div className="sidebar-bottom">
-          <button><Settings size={19} /><span>Settings</span></button>
           <button onClick={() => { window.location.href = "/elevateorders"; }}><Store size={19} /><span>View storefront</span></button>
           <div className="user-card"><span>CH</span><div><b>Chef</b><small>Restaurant admin</small></div><PanelLeftClose size={17} /></div>
         </div>
@@ -891,6 +952,76 @@ function PhoneSetup() {
           <div className="transcript-line june"><span>J</span><p><b>June</b>The Hot Honey Pepperoni with Garlic Knots is a great match. Your total before tax is $26. Should I add both?</p></div>
         </section>
       </div>
+    </>
+  );
+}
+
+function RestaurantSettings() {
+  const [settings, setSettings] = useState({
+    restaurant: "Juniper & Stone",
+    address: "18 Oak Street",
+    phone: "(555) 014-0198",
+    pickupMinutes: "20",
+    acceptingOrders: true,
+    aiAssistant: true,
+    emailReceipts: true,
+    soundAlerts: true,
+  });
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("elevate-orders-settings");
+    if (stored) setSettings((current) => ({ ...current, ...JSON.parse(stored) }));
+  }, []);
+
+  const toggle = (key: "acceptingOrders" | "aiAssistant" | "emailReceipts" | "soundAlerts") => {
+    setSettings((current) => ({ ...current, [key]: !current[key] }));
+    setSaved(false);
+  };
+
+  return (
+    <>
+      <PageHeader eyebrow="RESTAURANT SETTINGS" title="Make Elevate Orders yours.">
+        <button className="primary-button" onClick={() => {
+          localStorage.setItem("elevate-orders-settings", JSON.stringify(settings));
+          setSaved(true);
+          window.setTimeout(() => setSaved(false), 2200);
+        }}><Check size={17} /> {saved ? "Settings saved" : "Save changes"}</button>
+      </PageHeader>
+      <div className="settings-layout">
+        <section className="ops-card settings-card">
+          <div className="card-heading"><div><span className="eyebrow">STOREFRONT</span><h2>Restaurant details</h2></div></div>
+          <div className="settings-fields">
+            <label>Restaurant name<input value={settings.restaurant} onChange={(event) => setSettings({ ...settings, restaurant: event.target.value })} /></label>
+            <label>Pickup address<input value={settings.address} onChange={(event) => setSettings({ ...settings, address: event.target.value })} /></label>
+            <label>Ordering phone<input value={settings.phone} onChange={(event) => setSettings({ ...settings, phone: event.target.value })} /></label>
+            <label>Default pickup time<div className="input-suffix"><input type="number" min="5" value={settings.pickupMinutes} onChange={(event) => setSettings({ ...settings, pickupMinutes: event.target.value })} /><span>minutes</span></div></label>
+          </div>
+        </section>
+        <section className="ops-card settings-card">
+          <div className="card-heading"><div><span className="eyebrow">ORDER FLOW</span><h2>Channels and alerts</h2></div></div>
+          <div className="settings-toggles">
+            {[
+              ["acceptingOrders", "Accept online orders", "Customers can place new pickup and delivery orders."],
+              ["aiAssistant", "AI ordering assistant", "June can recommend food and add confirmed items to carts."],
+              ["emailReceipts", "Email confirmations", "Send customers a receipt after checkout."],
+              ["soundAlerts", "Kitchen sound alerts", "Play an alert when a new order reaches the dashboard."],
+            ].map(([key, title, description]) => (
+              <button className="setting-toggle" onClick={() => toggle(key as "acceptingOrders" | "aiAssistant" | "emailReceipts" | "soundAlerts")} key={key}>
+                <span><b>{title}</b><small>{description}</small></span>
+                <i className={settings[key as keyof typeof settings] ? "on" : ""}><span /></i>
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
+      <section className="settings-danger">
+        <div><b>Demo restaurant reset</b><p>Clear locally saved orders, menu availability, customer sessions, and settings.</p></div>
+        <button onClick={() => {
+          ["elevate-orders-orders", "elevate-orders-menu", "elevate-orders-sessions", "elevate-orders-settings"].forEach((key) => localStorage.removeItem(key));
+          window.location.reload();
+        }}>Reset demo data</button>
+      </section>
     </>
   );
 }

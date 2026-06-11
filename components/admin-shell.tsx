@@ -30,7 +30,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               alt="Elevate Systems"
               className="h-14 w-14 shrink-0 object-contain"
               height={56}
-              src="/elevate-logo.png"
+              src="/elevate-logo-transparent.png"
               width={56}
               priority
             />
@@ -77,7 +77,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 alt="Elevate Systems"
                 className="h-10 w-10 object-contain"
                 height={40}
-                src="/elevate-logo.png"
+                src="/elevate-logo-transparent.png"
                 width={40}
               />
               <div>

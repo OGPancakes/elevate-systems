@@ -61,19 +61,15 @@ export function SiteHeader() {
   return (
     <header className="fixed left-0 right-0 top-0 z-40 border-b border-white/10 bg-[#030711]/90 backdrop-blur-xl">
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5">
-        <Link className="flex items-center gap-3" href="/" aria-label="Elevate Systems home">
+        <Link className="flex items-center" href="/" aria-label="Elevate Systems home">
           <Image
             alt="Elevate Systems logo"
-            className="h-14 w-14 object-contain sm:h-16 sm:w-16"
-            height={64}
-            src="/elevate-logo.png"
-            width={64}
+            className="h-16 w-28 object-contain sm:h-[70px] sm:w-32"
+            height={70}
+            src="/elevate-logo-transparent.png"
+            width={128}
             priority
           />
-          <div className="hidden sm:block">
-            <p className="text-sm font-semibold tracking-[0.18em] text-white">ELEVATE</p>
-            <p className="text-xs tracking-[0.28em] text-sky-300">SYSTEMS</p>
-          </div>
         </Link>
 
         <div className="hidden items-center gap-1 md:flex" ref={navRef}>

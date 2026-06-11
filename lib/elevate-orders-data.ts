@@ -11,6 +11,7 @@ export const menuItems: MenuItem[] = [
     available: true,
     accent: "#f1c6a8",
     initials: "IS",
+    image: "/menu/italian-stack.jpg",
   },
   {
     id: "turkey-club",
@@ -22,6 +23,7 @@ export const menuItems: MenuItem[] = [
     available: true,
     accent: "#b9d7c2",
     initials: "TC",
+    image: "/menu/turkey-club.jpg",
   },
   {
     id: "hot-honey-pie",
@@ -33,6 +35,7 @@ export const menuItems: MenuItem[] = [
     available: true,
     accent: "#e9a280",
     initials: "HH",
+    image: "/menu/hot-honey-pie.jpg",
   },
   {
     id: "garden-pie",
@@ -44,6 +47,7 @@ export const menuItems: MenuItem[] = [
     available: true,
     accent: "#9fc0a3",
     initials: "GP",
+    image: "/menu/garden-pie.jpg",
   },
   {
     id: "chicken-bowl",
@@ -55,6 +59,7 @@ export const menuItems: MenuItem[] = [
     available: true,
     accent: "#d8bd8a",
     initials: "CB",
+    image: "/menu/chicken-bowl.jpg",
   },
   {
     id: "market-bowl",
@@ -66,6 +71,7 @@ export const menuItems: MenuItem[] = [
     available: true,
     accent: "#a8c6ad",
     initials: "MV",
+    image: "/menu/market-bowl.jpg",
   },
   {
     id: "garlic-knots",
@@ -76,6 +82,7 @@ export const menuItems: MenuItem[] = [
     available: true,
     accent: "#e6cf9b",
     initials: "GK",
+    image: "/menu/garlic-knots.jpg",
   },
   {
     id: "crispy-potatoes",
@@ -87,6 +94,7 @@ export const menuItems: MenuItem[] = [
     available: true,
     accent: "#d6b67c",
     initials: "CP",
+    image: "/menu/crispy-potatoes.jpg",
   },
   {
     id: "blood-orange",
@@ -97,6 +105,7 @@ export const menuItems: MenuItem[] = [
     available: true,
     accent: "#e79f80",
     initials: "BO",
+    image: "/menu/blood-orange.jpg",
   },
 ];
 

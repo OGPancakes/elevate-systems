@@ -34,7 +34,7 @@ export default function BookPage() {
               alt="Elevate Systems logo"
               className="h-10 w-10 rounded-md object-cover"
               height={40}
-              src="/elevate-logo.png"
+              src="/elevate-logo-transparent.png"
               width={40}
               priority
             />
