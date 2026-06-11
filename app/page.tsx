@@ -85,29 +85,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section>
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-28 lg:grid-cols-[1fr_0.8fr] lg:items-center">
-          <div>
-            <p className="text-sm font-medium text-sky-300">Website Audit AI</p>
-            <h2 className="mt-3 max-w-3xl text-3xl font-semibold text-white sm:text-5xl">
-              See what your current website could become.
-            </h2>
-            <p className="mt-5 max-w-2xl leading-8 text-white/50">
-              Get a focused AI review and a premium homepage redesign concept based on your
-              business.
-            </p>
-          </div>
-          <div className="lg:text-right">
-            <Button asChild size="lg">
-              <Link href="/audit">
-                Start Website Audit
-                <Sparkles className="h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
       <section id="contact" className="border-t border-white/10 bg-white/[0.018]">
         <div className="mx-auto max-w-7xl px-5 py-28 text-center">
         <p className="text-sm font-medium text-sky-300">Ready when you are</p>
