@@ -33,7 +33,8 @@ const products = [
     name: "Elevate Leads",
     description: "Capture, qualify, route, and follow up with every new opportunity.",
     icon: Target,
-    status: "Coming soon"
+    status: "Live demo",
+    href: "/elevateleads"
   },
   {
     name: "Elevate Audit",
