@@ -71,6 +71,62 @@ body {
   animation: scan-line 2.2s linear infinite;
 }
 
+@keyframes audit-scan-beam {
+  0% {
+    top: 10%;
+    opacity: 0;
+  }
+  12%,
+  82% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 92%;
+    opacity: 0;
+  }
+}
+
+@keyframes audit-power-glow {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes audit-power-fill {
+  from {
+    transform: translateX(-85%);
+  }
+  to {
+    transform: translateX(85%);
+  }
+}
+
+.audit-scan-beam {
+  animation: audit-scan-beam 3.4s ease-in-out infinite;
+}
+
+.audit-power-glow {
+  animation: audit-power-glow 2.8s ease-in-out infinite;
+}
+
+.audit-power-fill > div {
+  animation: audit-power-fill 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audit-scan-beam,
+  .audit-power-glow,
+  .audit-power-fill > div {
+    animation: none;
+  }
+}
+
 @media (max-width: 768px) {
   .section-pad {
     padding: 4rem 0;

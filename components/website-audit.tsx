@@ -64,6 +64,29 @@ const fallbackAudit: AuditResult = {
   cta: "Book a strategy call and we will map the fastest upgrade path."
 };
 
+const auditStages = [
+  {
+    label: "Connecting to website",
+    detail: "Opening the live site and collecting its public signals."
+  },
+  {
+    label: "Reading brand and content",
+    detail: "Mapping the offer, visual identity, and customer journey."
+  },
+  {
+    label: "Scoring conversion paths",
+    detail: "Reviewing trust, calls to action, mobile flow, and lead capture."
+  },
+  {
+    label: "Building the redesign concept",
+    detail: "Turning the strongest opportunities into a premium homepage direction."
+  },
+  {
+    label: "Rendering your transformation",
+    detail: "Preparing the audit and before-and-after experience."
+  }
+];
+
 function listItems(items: string[]) {
   return items.filter(Boolean).slice(0, 5);
 }
@@ -78,6 +101,7 @@ export function WebsiteAudit() {
   const [slider, setSlider] = useState(48);
   const [activeMarker, setActiveMarker] = useState(0);
   const [sessionId, setSessionId] = useState("");
+  const [auditProgress, setAuditProgress] = useState(0);
 
   useEffect(() => {
     const existing = window.sessionStorage.getItem("elevate_session_id");
@@ -85,6 +109,21 @@ export function WebsiteAudit() {
     window.sessionStorage.setItem("elevate_session_id", next);
     setSessionId(next);
   }, []);
+
+  useEffect(() => {
+    if (!loading) return;
+
+    setAuditProgress(7);
+    const progressTimer = window.setInterval(() => {
+      setAuditProgress((current) => {
+        if (current >= 94) return current;
+        const nextStep = current < 36 ? 4 : current < 72 ? 2 : 1;
+        return Math.min(94, current + nextStep);
+      });
+    }, 480);
+
+    return () => window.clearInterval(progressTimer);
+  }, [loading]);
 
   const headline = useMemo(() => {
     if (!businessName.trim()) return "Let's upgrade your website.";
@@ -113,6 +152,8 @@ export function WebsiteAudit() {
 
       setResult(data.audit ?? fallbackAudit);
       setRedesign(data.redesign ?? null);
+      setAuditProgress(100);
+      await new Promise((resolve) => window.setTimeout(resolve, 350));
     } catch (auditError) {
       setError(
         auditError instanceof Error
@@ -123,6 +164,11 @@ export function WebsiteAudit() {
       setLoading(false);
     }
   }
+
+  const activeAuditStage = Math.min(
+    auditStages.length - 1,
+    Math.floor((auditProgress / 100) * auditStages.length)
+  );
 
   return (
     <section id="audit" className="section-pad mx-auto max-w-7xl px-5">
@@ -258,13 +304,105 @@ export function WebsiteAudit() {
 
           <Button className="w-full" disabled={loading} size="lg" type="submit">
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ScanSearch className="h-5 w-5" />}
-            {loading ? "Scanning website" : "Generate AI Website Audit"}
+            {loading ? `Building audit ${auditProgress}%` : "Generate AI Website Audit"}
           </Button>
         </form>
 
         <div className="relative min-h-[520px] overflow-hidden bg-black/20 p-5 sm:p-7">
           <div className="absolute inset-x-10 top-8 h-px bg-gradient-to-r from-transparent via-sky-300/40 to-transparent" />
-          <div className="relative">
+          <div className="relative h-full">
+            {loading ? (
+              <div className="audit-power-shell relative flex min-h-[466px] flex-col overflow-hidden rounded-lg border border-sky-300/20 bg-[#050d1a] p-5 sm:p-7">
+                <div
+                  className="pointer-events-none absolute inset-0 transition-opacity duration-700"
+                  style={{ opacity: 0.18 + auditProgress / 150 }}
+                >
+                  <div className="audit-power-glow absolute -right-28 -top-28 h-80 w-80 rounded-full bg-sky-400/30 blur-3xl" />
+                  <div className="absolute -bottom-32 -left-24 h-72 w-72 rounded-full bg-blue-600/20 blur-3xl" />
+                </div>
+                <div className="audit-scan-beam pointer-events-none absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-200 to-transparent shadow-[0_0_22px_5px_rgba(56,189,248,0.35)]" />
+
+                <div className="relative z-10 flex items-start justify-between gap-5">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-300">
+                      Elevate scan engine
+                    </p>
+                    <h3 className="mt-3 text-2xl font-semibold text-white">
+                      Building your website transformation
+                    </h3>
+                    <p className="mt-2 max-w-lg text-sm leading-6 text-white/50">
+                      Keep this page open while Elevate Bot analyzes the current experience and
+                      prepares a stronger direction.
+                    </p>
+                  </div>
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-sky-300/25 bg-sky-300/10 text-xl font-semibold text-sky-200 shadow-[0_0_35px_rgba(56,189,248,0.18)]">
+                    {auditProgress}
+                  </div>
+                </div>
+
+                <div className="relative z-10 mt-8">
+                  <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.16em] text-white/40">
+                    <span>Power level</span>
+                    <span className="text-sky-300">{auditProgress}%</span>
+                  </div>
+                  <div className="relative h-3 overflow-hidden rounded-full border border-white/10 bg-black/50">
+                    <div
+                      className="audit-power-fill relative h-full rounded-full bg-gradient-to-r from-blue-700 via-sky-400 to-cyan-200 transition-[width] duration-500 ease-out"
+                      style={{
+                        width: `${auditProgress}%`,
+                        boxShadow: `0 0 ${12 + auditProgress / 2}px rgba(56, 189, 248, ${0.25 + auditProgress / 180})`
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/55 to-transparent" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative z-10 mt-7 grid flex-1 content-center gap-3">
+                  {auditStages.map((stage, index) => {
+                    const complete = index < activeAuditStage || auditProgress === 100;
+                    const active = index === activeAuditStage && auditProgress < 100;
+                    return (
+                      <div
+                        className={`flex items-start gap-4 rounded-md border px-4 py-3 transition duration-500 ${
+                          active
+                            ? "border-sky-300/35 bg-sky-300/10 shadow-[0_0_24px_rgba(56,189,248,0.08)]"
+                            : complete
+                              ? "border-emerald-300/15 bg-emerald-300/[0.04]"
+                              : "border-white/[0.06] bg-white/[0.025] opacity-45"
+                        }`}
+                        key={stage.label}
+                      >
+                        <div
+                          className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                            complete
+                              ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-300"
+                              : active
+                                ? "border-sky-300/40 bg-sky-300/15 text-sky-200"
+                                : "border-white/10 text-white/25"
+                          }`}
+                        >
+                          {complete ? (
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                          ) : active ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                          )}
+                        </div>
+                        <div>
+                          <p className={`text-sm font-medium ${active ? "text-white" : "text-white/65"}`}>
+                            {stage.label}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-white/35">{stage.detail}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+            <>
             <div className="mb-6 rounded-xl border border-white/10 bg-white/[0.04] p-5">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-300">
                 Preview response
@@ -328,6 +466,8 @@ export function WebsiteAudit() {
                   </div>
                 ))}
               </div>
+            )}
+            </>
             )}
           </div>
         </div>

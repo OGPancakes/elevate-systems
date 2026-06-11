@@ -130,17 +130,8 @@ export function AiSolutionsExperience({
       <section className="relative min-h-[92vh] border-b border-white/10 pt-28">
         <div className="dashboard-grid pointer-events-none absolute inset-0 opacity-25 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
         <div className="pointer-events-none absolute left-1/2 top-32 h-px w-[72%] -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-300/50 to-transparent" />
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-20 pt-12 lg:grid-cols-[0.86fr_1.14fr] lg:items-center">
-          <div>
-            {checkoutStatus === "success" ? (
-              <div className="mb-6 border border-emerald-300/25 bg-emerald-300/10 p-4 text-sm leading-6 text-emerald-100">
-                Payment received. Your purchase is now in the Elevate command center, and our team will contact you with onboarding details.
-              </div>
-            ) : checkoutStatus === "cancelled" ? (
-              <div className="mb-6 border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
-                Checkout was cancelled. Nothing was charged, and you can return to the packages whenever you are ready.
-              </div>
-            ) : null}
+        <div className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-20 pt-12 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
+          <div className="lg:sticky lg:top-36 lg:pt-20">
             <div className="inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-2 text-sm text-sky-100">
               <Sparkles className="h-4 w-4" />
               AI opportunity intelligence
@@ -173,8 +164,8 @@ export function AiSolutionsExperience({
             </div>
           </div>
 
-          <div id="scanner" className="scroll-mt-28 overflow-hidden rounded-lg border border-white/10 bg-[#08101d]/90 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+          <div id="scanner" className="scroll-mt-28 overflow-hidden rounded-lg border border-white/10 bg-[#08101d]/90 shadow-2xl lg:flex lg:h-[760px] lg:flex-col">
+            <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-4">
               <div>
                 <p className="font-semibold text-white">Automation Opportunity Scanner</p>
                 <p className="mt-1 text-xs text-white/40">Website signals + AI recommendations</p>
@@ -186,7 +177,7 @@ export function AiSolutionsExperience({
             </div>
 
             {!result ? (
-              <form className="p-5 sm:p-7" onSubmit={runScan}>
+              <form className="p-5 sm:p-7 lg:min-h-0 lg:flex-1 lg:overflow-y-auto" onSubmit={runScan}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="space-y-2 sm:col-span-2">
                     <span className="text-sm text-white/60">Website URL</span>
@@ -240,7 +231,7 @@ export function AiSolutionsExperience({
                 </p>
               </form>
             ) : (
-              <div className="p-5 sm:p-7">
+              <div className="p-5 sm:p-7 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
                 <div className="flex flex-col gap-6 border-b border-white/10 pb-6 sm:flex-row sm:items-center">
                   <div className="relative flex h-32 w-32 shrink-0 items-center justify-center rounded-full border border-sky-300/30 bg-sky-300/5">
                     <div className="absolute inset-2 rounded-full border border-dashed border-sky-300/20" />
