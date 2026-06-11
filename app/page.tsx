@@ -1,12 +1,43 @@
 import Link from "next/link";
-import { ArrowRight, CalendarCheck, Check, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarCheck,
+  Check,
+  Clock3,
+  ShieldCheck,
+  Sparkles,
+  Workflow
+} from "lucide-react";
 
 import { DashboardPreview } from "@/components/dashboard-preview";
 import { ElevateBot } from "@/components/elevate-bot";
-import { RobotScout } from "@/components/robot-scout";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { audiences, services } from "@/lib/site-data";
+
+const benefits = [
+  {
+    icon: ShieldCheck,
+    title: "Built around trust",
+    description: "Clear websites and customer experiences that make established businesses look established."
+  },
+  {
+    icon: Clock3,
+    title: "Faster response",
+    description: "AI-assisted intake and follow-up that keeps inquiries from waiting or disappearing."
+  },
+  {
+    icon: Workflow,
+    title: "One connected flow",
+    description: "Websites, CRM, booking, and communication designed to work as one system."
+  }
+];
+
+const results = [
+  { value: "24/7", label: "customer response coverage" },
+  { value: "< 1 min", label: "possible first-response time" },
+  { value: "1 system", label: "from inquiry to booked call" }
+];
 
 export default function Home() {
   return (
@@ -44,8 +75,7 @@ export default function Home() {
         <DashboardPreview />
       </section>
 
-      <section className="relative border-y border-white/10 bg-white/[0.018]">
-        <RobotScout />
+      <section className="border-y border-white/10 bg-white/[0.018]">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-7 md:flex-row md:items-center md:justify-between">
           <p className="text-sm font-medium text-white/55">Built for service businesses</p>
           <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/35">
@@ -55,6 +85,25 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-24">
+        <div className="max-w-2xl">
+          <p className="text-sm font-medium text-sky-300">Why Elevate</p>
+          <h2 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">
+            Technology should make the business feel easier to run.
+          </h2>
+        </div>
+        <div className="mt-12 grid gap-8 border-y border-white/10 py-10 md:grid-cols-3">
+          {benefits.map((benefit) => (
+            <div key={benefit.title}>
+              <benefit.icon className="h-6 w-6 text-sky-300" />
+              <h3 className="mt-5 text-lg font-semibold text-white">{benefit.title}</h3>
+              <p className="mt-3 max-w-sm leading-7 text-white/45">{benefit.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-white/10 bg-white/[0.018]">
+        <div className="mx-auto max-w-7xl px-5 py-24">
         <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
           <div>
             <p className="text-sm font-medium text-sky-300">What we build</p>
@@ -87,10 +136,10 @@ export default function Home() {
           View services
           <ArrowRight className="h-4 w-4" />
         </Link>
+        </div>
       </section>
 
-      <section className="relative border-y border-white/10 bg-white/[0.018]">
-        <RobotScout reverse />
+      <section>
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-24 lg:grid-cols-[1fr_0.8fr] lg:items-center">
           <div>
             <p className="text-sm font-medium text-sky-300">Website Audit AI</p>
@@ -113,51 +162,47 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="contact" className="mx-auto grid max-w-7xl gap-12 px-5 py-24 lg:grid-cols-[0.8fr_1.2fr]">
-        <div>
-          <p className="text-sm font-medium text-sky-300">Start a conversation</p>
-          <h2 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">
-            Tell us what should work better.
-          </h2>
-          <p className="mt-5 max-w-md leading-8 text-white/50">
-            We will identify the clearest website, automation, or CRM opportunity and follow up
-            with a practical next step.
-          </p>
-        </div>
-        <form className="border border-white/10 bg-white/[0.025] p-5 sm:p-7" action="/api/leads" method="post">
-          <input className="hidden" name="website" tabIndex={-1} type="text" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              ["name", "Name", "text"],
-              ["email", "Email", "email"],
-              ["company", "Company name", "text"],
-              ["phone", "Phone number (optional)", "tel"]
-            ].map(([name, label, type]) => (
-              <label className="space-y-2" key={name}>
-                <span className="text-sm font-medium text-white/60">{label}</span>
-                <input
-                  className="w-full border border-white/10 bg-black/25 px-3 py-3 text-white outline-none ring-sky-300/40 focus:ring-2"
-                  name={name}
-                  required={name === "name" || name === "email"}
-                  type={type}
-                />
-              </label>
+      <section className="border-y border-white/10 bg-white/[0.018]">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-20 lg:grid-cols-[0.7fr_1.3fr] lg:items-center">
+          <div>
+            <p className="text-sm font-medium text-sky-300">Designed for momentum</p>
+            <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">
+              Less waiting. Fewer disconnected tools.
+            </h2>
+          </div>
+          <div className="grid gap-px border border-white/10 bg-white/10 sm:grid-cols-3">
+            {results.map((result) => (
+              <div className="bg-[#060c16] p-6" key={result.label}>
+                <p className="text-3xl font-semibold text-white">{result.value}</p>
+                <p className="mt-2 text-sm leading-6 text-white/40">{result.label}</p>
+              </div>
             ))}
           </div>
-          <label className="mt-4 block space-y-2">
-            <span className="text-sm font-medium text-white/60">What would you like to improve?</span>
-            <textarea
-              className="min-h-28 w-full resize-none border border-white/10 bg-black/25 px-3 py-3 text-white outline-none ring-sky-300/40 focus:ring-2"
-              name="message"
-              required
-            />
-          </label>
-          <input name="serviceInterest" type="hidden" value="General inquiry" />
-          <Button className="mt-5" size="lg" type="submit">
-            Send Inquiry
-            <ArrowRight className="h-5 w-5" />
+        </div>
+      </section>
+
+      <section id="contact" className="mx-auto max-w-7xl px-5 py-28 text-center">
+        <p className="text-sm font-medium text-sky-300">Ready for the next step?</p>
+        <h2 className="mx-auto mt-3 max-w-3xl text-4xl font-semibold text-white sm:text-6xl">
+          Find the system worth building first.
+        </h2>
+        <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-white/50">
+          Book a focused strategy call or start with an AI website audit.
+        </p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <Button asChild size="lg">
+            <Link href="/book">
+              Book a Call
+              <CalendarCheck className="h-5 w-5" />
+            </Link>
           </Button>
-        </form>
+          <Button asChild size="lg" variant="secondary">
+            <Link href="/audit">
+              Get an Audit
+              <Sparkles className="h-5 w-5" />
+            </Link>
+          </Button>
+        </div>
       </section>
 
       <footer className="border-t border-white/10 py-8">

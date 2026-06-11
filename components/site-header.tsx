@@ -3,17 +3,24 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Bot, ChevronDown, Menu, ScanSearch, X } from "lucide-react";
+import { ArrowRight, Bot, ChevronDown, Menu, ScanSearch, SlidersHorizontal, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 const standardNav = [
   { label: "Services", href: "/services" },
+  { label: "Pricing", href: "/pricing" },
   { label: "Proof", href: "/proof" },
   { label: "Contact", href: "/#contact" }
 ];
 
 const aiNav = [
+  {
+    label: "AI Planner",
+    description: "Explore systems and estimate potential time savings.",
+    href: "/ai-planner",
+    icon: SlidersHorizontal
+  },
   {
     label: "AI Solutions",
     description: "Explore assistants, reception, follow-up, and operations.",

@@ -48,10 +48,12 @@ function scoreColor(score: number) {
 
 export function AiSolutionsExperience({
   stripeReady,
-  checkoutStatus
+  checkoutStatus,
+  mode = "scanner"
 }: {
   stripeReady: boolean;
   checkoutStatus?: string;
+  mode?: "scanner" | "planner" | "pricing";
 }) {
   const [activeService, setActiveService] = useState(0);
   const [scanning, setScanning] = useState(false);
@@ -124,6 +126,7 @@ export function AiSolutionsExperience({
 
   return (
     <>
+      {mode === "scanner" ? (
       <section className="relative min-h-[92vh] border-b border-white/10 pt-28">
         <div className="dashboard-grid pointer-events-none absolute inset-0 opacity-25 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
         <div className="pointer-events-none absolute left-1/2 top-32 h-px w-[72%] -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-300/50 to-transparent" />
@@ -157,10 +160,10 @@ export function AiSolutionsExperience({
                 </a>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <a href="#solutions">
-                  Explore Solutions
+                <Link href="/ai-planner">
+                  Open AI Planner
                   <ArrowRight className="h-5 w-5" />
-                </a>
+                </Link>
               </Button>
             </div>
             <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/45">
@@ -292,11 +295,14 @@ export function AiSolutionsExperience({
           </div>
         </div>
       </section>
+      ) : null}
 
+      {mode === "planner" ? (
+      <>
       <section className="section-pad mx-auto max-w-7xl px-5" id="solutions">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">Solution Explorer</p>
-          <h2 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">Choose the bottleneck. See the system.</h2>
+          <h1 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">Choose the bottleneck. See the system.</h1>
           <p className="mt-5 leading-8 text-white/55">Explore practical ways AI can support customer communication and internal operations without replacing the human judgment your business depends on.</p>
         </div>
         <div className="mt-10">
@@ -386,11 +392,23 @@ export function AiSolutionsExperience({
           </div>
         </div>
       </section>
+      </>
+      ) : null}
 
+      {mode === "pricing" ? (
       <section className="section-pad mx-auto max-w-7xl px-5" id="pricing">
+        {checkoutStatus === "success" ? (
+          <div className="mx-auto mb-10 max-w-3xl border border-emerald-300/25 bg-emerald-300/10 p-4 text-sm leading-6 text-emerald-100">
+            Payment received. Your purchase is now in the Elevate command center, and our team will contact you with onboarding details.
+          </div>
+        ) : checkoutStatus === "cancelled" ? (
+          <div className="mx-auto mb-10 max-w-3xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
+            Checkout was cancelled. Nothing was charged, and you can return whenever you are ready.
+          </div>
+        ) : null}
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">Engagement Options</p>
-          <h2 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">Start focused. Expand when the system proves useful.</h2>
+          <h1 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">Start focused. Expand when the system proves useful.</h1>
           <p className="mt-5 leading-8 text-white/55">Clear starting points for common implementations. Final scope is confirmed before work begins.</p>
         </div>
         <div className="mt-10 grid auto-rows-fr gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -424,6 +442,7 @@ export function AiSolutionsExperience({
           {stripeReady ? "Payments are processed securely by Stripe." : "Online checkout will appear when Stripe pricing is connected."}
         </div>
       </section>
+      ) : null}
     </>
   );
 }

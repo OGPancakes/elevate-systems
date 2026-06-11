@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     stripe_session_id: null,
     stripe_payment_intent_id: null,
     status: "Pending",
-    source: "AI Solutions",
+    source: "Pricing",
     notes: "",
     created_at: new Date().toISOString()
   });
@@ -49,15 +49,15 @@ export async function POST(request: Request) {
   params.set("mode", "payment");
   params.set("line_items[0][price]", priceId);
   params.set("line_items[0][quantity]", "1");
-  params.set("success_url", `${siteUrl}/ai-solutions?checkout=success&session_id={CHECKOUT_SESSION_ID}`);
-  params.set("cancel_url", `${siteUrl}/ai-solutions?checkout=cancelled#pricing`);
+  params.set("success_url", `${siteUrl}/pricing?checkout=success&session_id={CHECKOUT_SESSION_ID}`);
+  params.set("cancel_url", `${siteUrl}/pricing?checkout=cancelled`);
   params.set("customer_creation", "always");
   params.set("billing_address_collection", "auto");
   params.set("name_collection[individual][enabled]", "true");
   params.set("name_collection[business][enabled]", "true");
   params.set("metadata[purchase_id]", purchase.id);
   params.set("metadata[tier_id]", tier.id);
-  params.set("metadata[source]", "AI Solutions");
+  params.set("metadata[source]", "Pricing");
 
   const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
