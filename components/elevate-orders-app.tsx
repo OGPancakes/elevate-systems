@@ -393,7 +393,7 @@ function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { me
   const [loading, setLoading] = useState(false);
   const [recommendedItems, setRecommendedItems] = useState<MenuItem[]>([]);
   const [itemsAdded, setItemsAdded] = useState(false);
-  const suggestions = ["Something spicy", "A filling vegetarian meal", "Something filling with meat", "Lunch under $20"];
+  const suggestions = ["Something spicy", "A filling vegetarian meal", "A meaty meal under $20", "Lunch under $20"];
 
   const addRecommendedBundle = () => {
     if (!recommendedItems.length) return;
@@ -427,6 +427,38 @@ function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { me
     return menu.filter((item) => ["italian-stack", "crispy-potatoes"].includes(item.id));
   };
 
+  const buildMealResponse = (latestText: string, conversationText: string) => {
+    const latest = latestText.toLowerCase();
+    const hasBudget = /under\s*\$?20|\$20|less than\s*\$?20/.test(conversationText.toLowerCase());
+    const pick = (ids: string[]) => menu.filter((item) => ids.includes(item.id));
+
+    if (latest.includes("spicy")) {
+      const items = pick(["hot-honey-pie", "garlic-knots"]);
+      return { items, message: "For something spicy, I’d pair the Hot Honey Pepperoni with Garlic Knots. It is bold, savory, and $26 before tax. Would you like me to add both?" };
+    }
+    if (latest.includes("vegetarian") || latest.includes("veggie") || latest.includes("no meat")) {
+      const items = latest.includes("pizza") ? pick(["garden-pie"]) : pick(["market-bowl", "blood-orange"]);
+      return { items, message: latest.includes("pizza")
+        ? "The Garden Pie is a colorful vegetarian choice at $18. Would you like me to add it?"
+        : "The Market Veggie Bowl with a Blood Orange Soda is filling, vegetarian, and $17.50 before tax. Would you like me to add both?" };
+    }
+    if (latest.includes("meat") || latest.includes("chicken") || latest.includes("filling")) {
+      const items = hasBudget || latest.includes("under") ? pick(["chicken-bowl", "blood-orange"]) : pick(["italian-stack", "crispy-potatoes"]);
+      return { items, message: hasBudget || latest.includes("under")
+        ? "For a filling meat option under $20, I’d pair the Charred Chicken Bowl with a Blood Orange Soda for $18.75 before tax. Would you like me to add both?"
+        : "For a hearty meat-forward meal, I’d pair The Italian Stack with Crispy Potatoes for $21 before tax. Would you like me to add both?" };
+    }
+    if (latest.includes("under 20") || latest.includes("$20") || latest.includes("lunch")) {
+      const items = pick(["turkey-club", "blood-orange"]);
+      return { items, message: "The Roasted Turkey Club with a Blood Orange Soda makes a complete lunch for $17.25 before tax. Would you like me to add both?" };
+    }
+    if (latest.includes("pizza")) {
+      const items = pick(["hot-honey-pie", "garlic-knots"]);
+      return { items, message: "The Hot Honey Pepperoni and Garlic Knots are a guest-favorite pizza pairing at $26 before tax. Should I add both?" };
+    }
+    return undefined;
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
     const nextMessages: ChatMessage[] = [...messages, { role: "user", content: text }];
@@ -439,6 +471,15 @@ function AssistantPanel({ menu, addItem, openCheckout, onActivity, close }: { me
       || /\b(add both|add them|add it|place the order|checkout)\b/i.test(text);
     if (confirmation && recommendedItems.length) {
       addRecommendedBundle();
+      return;
+    }
+
+    const conversationText = nextMessages.filter((message) => message.role === "user").map((message) => message.content).join(" ");
+    const mealResponse = buildMealResponse(text, conversationText);
+    if (mealResponse) {
+      setRecommendedItems(mealResponse.items);
+      setMessages((current) => [...current, { role: "assistant", content: mealResponse.message }]);
+      onActivity(`June built a ${mealResponse.items.length}-item meal for the guest`);
       return;
     }
 
