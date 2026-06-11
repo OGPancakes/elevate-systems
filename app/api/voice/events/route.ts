@@ -30,7 +30,7 @@ const isVoiceEvent = (value: unknown): value is VoiceEvent => {
 };
 
 const isShowcaseCall = (callSid: string) =>
-  !/^(CA-(?:PERSIST|DURABLE|PUBLIC|LIVE-DEMO)|demo-)/i.test(callSid);
+  !/^(CA-(?:PERSIST|DURABLE|PUBLIC|LIVE-DEMO|DEPLOY|FINAL-READY|CONVERSATION|ALLERGY|LIFECYCLE)|demo-)/i.test(callSid);
 
 export async function GET() {
   let events = store.events.slice(0, 20);

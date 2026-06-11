@@ -11,6 +11,7 @@ export type VoiceOrderState = {
   allergyNotes?: string;
   awaiting?: "fulfillment" | "address" | "confirmation";
   history: Array<{ role: "user" | "assistant"; content: string }>;
+  silenceCount?: number;
   completed: boolean;
 };
 
@@ -30,7 +31,7 @@ export const xmlEscape = (value: string) =>
     "\"": "&quot;",
   })[character] ?? character);
 
-const sessionId = (callSid: string) => `twilio-${callSid}`;
+const sessionId = (callSid: string) => `twilio-state-${callSid}`;
 const stateRole = "voice-state";
 const voiceName = "Polly.Joanna-Generative";
 const stateGlobal = globalThis as typeof globalThis & {
@@ -125,6 +126,9 @@ const detectAllergy = (text: string) => {
   return `${found.length ? found.join(", ").toUpperCase() : "GUEST-REPORTED"} ALLERGY - confirm ingredients and prevent cross-contact.`;
 };
 
+const looksLikeAddress = (text: string) =>
+  /\d/.test(text) && /\b(street|st|road|rd|avenue|ave|lane|ln|drive|dr|court|ct|boulevard|blvd|way|highway|hwy|apartment|apt|unit)\b/i.test(text);
+
 const fallbackNaturalReply = (text: string, state: VoiceOrderState) => {
   const lower = text.toLowerCase();
   if (/\b(how are you|how's your day|hows your day|how is your day)\b/.test(lower)) {
@@ -178,13 +182,27 @@ export async function processVoiceTurn(input: string, state: VoiceOrderState): P
   let hangup = false;
   let eventDetail = text ? `Guest said: "${text.slice(0, 90)}"` : "June is listening for the guest";
 
-  if (state.awaiting === "confirmation" && /^(yes|yeah|yep|correct|confirm|place it|that's right|thats right|sounds good)\b/i.test(text)) {
+  if (!text) {
+    state.silenceCount = (state.silenceCount ?? 0) + 1;
+    if (state.silenceCount >= 2) {
+      state.completed = true;
+      requiredMessage = "I'm having a little trouble hearing you, so I'll let you go for now. Please call back whenever you're ready. Bye!";
+      eventDetail = "Call ended after repeated silence";
+      hangup = true;
+    } else {
+      requiredMessage = "Sorry, I didn't catch that. Could you say it one more time?";
+    }
+  } else {
+    state.silenceCount = 0;
+  }
+
+  if (!hangup && state.awaiting === "confirmation" && /^(yes|yeah|yep|correct|confirm|place it|that's right|thats right|sounds good)\b/i.test(text)) {
     state.completed = true;
     state.awaiting = undefined;
     requiredMessage = `Perfect! Your order is confirmed ${state.fulfillment === "Delivery" ? "for delivery" : "for pickup"}. Thanks for calling Juniper and Stone, and enjoy your meal!`;
     eventDetail = `Order confirmed: ${orderSummary(state)}`;
     hangup = true;
-  } else {
+  } else if (!hangup) {
     const acceptsRecommendation = /^(yes|yeah|yep|sure|okay|ok|add it|add that|i'll take that|ill take that|sounds good|that works)\b/i.test(text);
     if (acceptsRecommendation && state.offeredItemIds?.length) {
       const offered = menuItems.filter((item) => state.offeredItemIds?.includes(item.id));
@@ -209,7 +227,7 @@ export async function processVoiceTurn(input: string, state: VoiceOrderState): P
       requiredMessage = /\b(how are you|how's your day|hows your day|how is your day)\b/i.test(text)
         ? "I'm doing great, thanks for asking! Pickup it is. What sounds good today?"
         : "Perfect, pickup it is! What sounds good today?";
-    } else if (state.awaiting === "address" && text.length > 5) {
+    } else if (state.awaiting === "address" && looksLikeAddress(text)) {
       state.address = text;
       state.awaiting = undefined;
       requiredMessage = "Got it, thank you! Now, what would you like to order?";
@@ -234,18 +252,28 @@ export async function processVoiceTurn(input: string, state: VoiceOrderState): P
 
     if (!mentioned.length && !requiredMessage) {
       if (/\b(meaty|meat|hearty|filling)\b/i.test(text)) {
+        const repeated = state.offeredItemIds?.includes("italian-stack");
         state.offeredItemIds = ["italian-stack", "crispy-potatoes"];
-        requiredMessage = "Oh, I've got you! The Italian Stack with Crispy Potatoes is hearty, savory, and seriously satisfying. Want me to add both?";
+        requiredMessage = repeated
+          ? "The Italian Stack is loaded with salami, capicola, and provolone, and the Crispy Potatoes make it a really hearty meal. Should I add that combo?"
+          : "Oh, I've got you! The Italian Stack with Crispy Potatoes is hearty, savory, and seriously satisfying. Want me to add both?";
       } else if (/\b(spicy|hot|kick)\b/i.test(text)) {
+        const repeated = state.offeredItemIds?.includes("hot-honey-pie");
         state.offeredItemIds = ["hot-honey-pie", "garlic-knots"];
-        requiredMessage = "You should try the Hot Honey Pepperoni with Garlic Knots. It's sweet, spicy, and such a good combo. Want me to add both?";
+        requiredMessage = repeated
+          ? "The Hot Honey Pepperoni gets its kick from spicy honey over cup-and-char pepperoni, so it has heat without being overwhelming. Want the pizza with Garlic Knots?"
+          : "You should try the Hot Honey Pepperoni with Garlic Knots. It's sweet, spicy, and such a good combo. Want me to add both?";
       } else if (/\b(vegetarian|veggie|no meat)\b/i.test(text)) {
         state.offeredItemIds = ["market-bowl", "blood-orange"];
         requiredMessage = "The Market Veggie Bowl with a Blood Orange Soda is fresh, filling, and really good together. Want me to add both?";
       }
     }
 
-    if (/\b(done|that's all|thats all|finish|checkout|complete order|place the order|nothing else)\b/i.test(text)) {
+    if (state.awaiting === "address" && requiredMessage && !looksLikeAddress(text) && !requiredMessage.toLowerCase().includes("address")) {
+      requiredMessage = `${requiredMessage} Whenever you're ready, I'll still need the delivery address too.`;
+    }
+
+    if (/\b(done|that's all|thats all|that's everything|thats everything|that is everything|all set|finish|checkout|complete order|place the order|nothing else|no more)\b/i.test(text)) {
       if (!state.items.length) {
         requiredMessage = "I can finish that for you, but your order is still empty. What would you like to add?";
       } else if (!state.fulfillment) {
