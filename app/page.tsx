@@ -19,7 +19,7 @@ export default function Home() {
       <SiteHeader />
 
       <section id="top" className="relative mx-auto grid min-h-[92vh] max-w-7xl items-center gap-12 px-5 pb-20 pt-32 lg:grid-cols-[0.9fr_1.1fr]">
-        <div>
+        <div className="hero-reveal">
           <p className="text-sm font-medium text-sky-300">AI systems for service businesses</p>
           <h1 className="mt-5 text-balance text-5xl font-semibold leading-[1.02] text-white sm:text-6xl lg:text-7xl">
             Automate. Optimize. Elevate.
@@ -35,7 +35,7 @@ export default function Home() {
                 <CalendarCheck className="h-5 w-5" />
               </Link>
             </Button>
-            <Link className="flex min-h-12 items-center gap-2 px-2 text-sm font-medium text-white/55 transition hover:text-white" href="/ai-solutions">
+            <Link className="animated-link flex min-h-12 items-center gap-2 px-2 text-sm font-medium text-white/55 hover:text-white" href="/ai-solutions">
               Explore AI Solutions
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -71,7 +71,7 @@ export default function Home() {
 
         <div className="mt-14 grid gap-px overflow-hidden border border-white/10 bg-white/10 md:grid-cols-3">
           {services.slice(0, 3).map((service) => (
-            <article className="flex min-h-56 flex-col bg-[#060c16] p-7 sm:p-8" key={service.title}>
+            <article className="site-hover-card flex min-h-56 flex-col bg-[#060c16] p-7 sm:p-8" key={service.title}>
               <service.icon className="h-6 w-6 text-sky-300" />
               <h3 className="mt-7 text-xl font-semibold text-white">{service.title}</h3>
               <p className="mt-3 leading-7 text-white/50">{service.description}</p>

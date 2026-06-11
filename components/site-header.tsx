@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Bot, ChevronDown, Menu, ScanSearch, SlidersHorizontal, X } from "lucide-react";
+import {
+  ArrowRight,
+  Bot,
+  ChevronDown,
+  Menu,
+  ScanSearch,
+  SlidersHorizontal,
+  X
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -38,11 +46,13 @@ const aiNav = [
 export function SiteHeader() {
   const [aiOpen, setAiOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function closeOnOutsideClick(event: MouseEvent) {
-      if (!dropdownRef.current?.contains(event.target as Node)) setAiOpen(false);
+      if (!navRef.current?.contains(event.target as Node)) {
+        setAiOpen(false);
+      }
     }
     document.addEventListener("mousedown", closeOnOutsideClick);
     return () => document.removeEventListener("mousedown", closeOnOutsideClick);
@@ -66,8 +76,8 @@ export function SiteHeader() {
           </div>
         </Link>
 
-        <div className="hidden items-center gap-1 md:flex">
-          <div className="relative" ref={dropdownRef}>
+        <div className="hidden items-center gap-1 md:flex" ref={navRef}>
+          <div className="relative">
             <button
               aria-expanded={aiOpen}
               className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-white/60 transition hover:bg-white/10 hover:text-white"
@@ -100,9 +110,12 @@ export function SiteHeader() {
               ))}
             </div>
           </div>
+          <Link className="nav-motion rounded-md px-3 py-2 text-sm text-white/60 hover:bg-white/10 hover:text-white" href="/demos">
+            Demos
+          </Link>
           {standardNav.map((item) => (
             <Link
-              className="rounded-md px-3 py-2 text-sm text-white/60 transition hover:bg-white/10 hover:text-white"
+              className="nav-motion rounded-md px-3 py-2 text-sm text-white/60 hover:bg-white/10 hover:text-white"
               href={item.href}
               key={item.label}
             >
@@ -132,7 +145,7 @@ export function SiteHeader() {
 
       <div
         className={`overflow-hidden border-t border-white/10 bg-[#050b15] transition-[max-height,opacity] duration-300 md:hidden ${
-          mobileOpen ? "max-h-[540px] opacity-100" : "max-h-0 opacity-0"
+          mobileOpen ? "max-h-[82vh] overflow-y-auto opacity-100" : "max-h-0 opacity-0"
         }`}
       >
         <div className="mx-auto max-w-7xl space-y-1 px-5 py-5">
@@ -151,6 +164,14 @@ export function SiteHeader() {
               </span>
             </Link>
           ))}
+          <Link
+            className="block border-b border-white/10 px-3 py-4 text-sm font-medium text-white"
+            href="/demos"
+            onClick={() => setMobileOpen(false)}
+          >
+            Product Demos
+            <span className="mt-1 block text-xs font-normal text-white/40">Explore the Elevate product family.</span>
+          </Link>
           {standardNav.map((item) => (
             <Link
               className="block border-b border-white/10 px-3 py-4 text-sm text-white/70"
@@ -169,6 +190,7 @@ export function SiteHeader() {
           </Button>
         </div>
       </div>
+
     </header>
   );
 }

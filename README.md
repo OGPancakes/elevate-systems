@@ -2,6 +2,18 @@
 
 Premium Next.js website for Elevate Systems with AI chat, AI website audit lead capture, and booking flow.
 
+## Product Demo Routing
+
+The main site exposes a stable `/elevateorders` link while keeping the product
+application in a separate codebase. Configure:
+
+`ELEVATE_ORDERS_URL=https://orders.elevatesystems.us/elevateorders`
+
+The company website redirects `/elevateorders` to that deployment. A redirect
+is used instead of proxying because two Next.js applications otherwise compete
+for `/_next` assets under the same host. For local development, run Elevate
+Orders on port 3010.
+
 ## Lead Capture Setup
 
 The website audit and booking forms work best with these Vercel environment variables:
