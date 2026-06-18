@@ -6,6 +6,13 @@ import {
   startRealtimeGreeting,
   verifyOpenAIWebhook,
 } from "@/lib/elevate-orders-realtime";
+import {
+  initializeReceptionistLead,
+  isReceptionistRealtimeCall,
+  receptionistCaller,
+  receptionistInstructions,
+  startReceptionistGreeting,
+} from "@/lib/elevate-receptionist-realtime";
 import { after } from "next/server";
 
 export const runtime = "nodejs";
@@ -25,14 +32,23 @@ export async function POST(request: Request) {
   }
 
   const callId = event.data.call_id;
-  const caller = realtimeCaller(event);
-  await initializeRealtimeDraft(callId, caller);
+  const isReceptionist = isReceptionistRealtimeCall(event);
+  const caller = isReceptionist ? receptionistCaller(event) : realtimeCaller(event);
+  if (isReceptionist) {
+    initializeReceptionistLead(callId, caller);
+  } else {
+    await initializeRealtimeDraft(callId, caller);
+  }
   const origin = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
   const mcpTool: Record<string, unknown> = {
     type: "mcp",
-    server_label: "elevate_orders",
-    server_url: `${origin}/api/realtime/mcp?call_id=${encodeURIComponent(callId)}`,
-    allowed_tools: ["get_menu", "update_order", "complete_order", "end_call"],
+    server_label: isReceptionist ? "elevate_receptionist" : "elevate_orders",
+    server_url: isReceptionist
+      ? `${origin}/api/receptionist/realtime/mcp?call_id=${encodeURIComponent(callId)}`
+      : `${origin}/api/realtime/mcp?call_id=${encodeURIComponent(callId)}`,
+    allowed_tools: isReceptionist
+      ? ["save_call_note", "end_call"]
+      : ["get_menu", "update_order", "complete_order", "end_call"],
     require_approval: "never",
   };
   if (process.env.REALTIME_MCP_TOKEN) {
@@ -48,7 +64,7 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       type: "realtime",
       model: process.env.OPENAI_REALTIME_MODEL || "gpt-realtime-2",
-      instructions: realtimeInstructions(),
+      instructions: isReceptionist ? receptionistInstructions() : realtimeInstructions(),
       reasoning: { effort: "low" },
       audio: {
         input: {
@@ -76,7 +92,7 @@ export async function POST(request: Request) {
     return new Response("Could not accept call", { status: 502 });
   }
 
-  after(() => startRealtimeGreeting(callId));
+  after(() => isReceptionist ? startReceptionistGreeting(callId) : startRealtimeGreeting(callId));
 
   await fetch(`${origin}/api/voice/events`, {
     method: "POST",
@@ -85,7 +101,9 @@ export async function POST(request: Request) {
       callSid: callId,
       from: caller,
       status: "in-progress",
-      detail: "June answered through OpenAI Realtime and is taking the order",
+      detail: isReceptionist
+        ? "Maya answered through OpenAI Realtime and is qualifying a front desk call"
+        : "June answered through OpenAI Realtime and is taking the order",
     }),
     cache: "no-store",
   }).catch(() => undefined);

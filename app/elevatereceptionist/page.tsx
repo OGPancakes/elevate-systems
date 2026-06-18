@@ -3,7 +3,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   CalendarCheck,
-  CheckCircle2,
   Clock3,
   Headphones,
   MessageSquareText,
@@ -13,28 +12,7 @@ import {
   UserRoundCheck,
   Zap
 } from "lucide-react";
-
-const demoNumber = "(908) 639-5394";
-const demoPhoneHref = "tel:+19086395394";
-
-const callFlow = [
-  {
-    speaker: "Caller",
-    text: "Hi, do you have openings this week for a cleaning?"
-  },
-  {
-    speaker: "Elevate Receptionist",
-    text: "Absolutely. I can help with that. What kind of cleaning are you looking for, and what day works best?"
-  },
-  {
-    speaker: "Caller",
-    text: "Move-out cleaning, preferably Friday morning."
-  },
-  {
-    speaker: "Elevate Receptionist",
-    text: "Perfect. I have the request captured. May I grab your name, phone number, and property address so the team can confirm?"
-  }
-];
+import { ElevateReceptionistPreview } from "@/components/elevate-receptionist-preview";
 
 const features = [
   {
@@ -129,10 +107,10 @@ export default function ElevateReceptionistPage() {
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
             <a
               className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-sky-400 to-violet-500 px-6 py-4 text-base font-black text-white shadow-2xl shadow-sky-500/25 transition duration-300 hover:-translate-y-1 hover:shadow-sky-500/40 active:translate-y-0"
-              href={demoPhoneHref}
+              href="#live-demo"
             >
               <PhoneCall className="h-5 w-5 transition group-hover:rotate-12" />
-              Call {demoNumber}
+              Start phone preview
               <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
             </a>
             <a
@@ -148,50 +126,7 @@ export default function ElevateReceptionistPage() {
           </p>
         </div>
 
-        <div className="relative">
-          <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-sky-500/20 via-violet-500/15 to-transparent blur-2xl" />
-          <div className="relative overflow-hidden rounded-[2.4rem] border border-white/12 bg-[#0b1022]/90 p-5 shadow-2xl shadow-black/40 backdrop-blur">
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.24em] text-sky-300">Live phone preview</p>
-                  <h2 className="mt-2 text-2xl font-black">Incoming call</h2>
-                </div>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400/15 text-emerald-200">
-                  <PhoneCall className="h-6 w-6 animate-pulse" />
-                </div>
-              </div>
-
-              <div className="mt-6 space-y-3" id="live-demo">
-                {callFlow.map((message, index) => (
-                  <div
-                    className={`rounded-2xl border p-4 ${
-                      message.speaker === "Caller"
-                        ? "border-white/10 bg-white/[0.06]"
-                        : "border-sky-300/20 bg-sky-400/10"
-                    }`}
-                    key={`${message.speaker}-${index}`}
-                  >
-                    <p className="text-xs font-black uppercase tracking-[0.18em] text-white/40">{message.speaker}</p>
-                    <p className="mt-2 text-sm leading-6 text-white/78">{message.text}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-violet-300/20 bg-violet-400/10 p-4">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="mt-1 h-5 w-5 text-violet-200" />
-                  <div>
-                    <p className="font-black">Dashboard note created</p>
-                    <p className="mt-1 text-sm leading-6 text-white/55">
-                      Move-out cleaning request, Friday morning preference, needs callback to confirm quote and time.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ElevateReceptionistPreview />
       </section>
 
       <section className="relative z-10 border-y border-white/10 bg-white/[0.035] px-5 py-10 backdrop-blur sm:px-8">
@@ -289,15 +224,15 @@ export default function ElevateReceptionistPage() {
 
           <div className="mt-10 flex flex-col items-start justify-between gap-5 border-t border-white/10 pt-8 sm:flex-row sm:items-center">
             <div>
-              <p className="text-sm font-bold text-white/45">Receptionist demo line</p>
-              <p className="mt-1 text-3xl font-black tracking-[-0.04em]">{demoNumber}</p>
+              <p className="text-sm font-bold text-white/45">Receptionist phone preview</p>
+              <p className="mt-1 text-3xl font-black tracking-[-0.04em]">Call yourself from the demo</p>
             </div>
             <a
               className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-white px-6 py-4 font-black text-[#090d1f] transition duration-300 hover:-translate-y-1 hover:bg-sky-100 active:translate-y-0"
-              href={demoPhoneHref}
+              href="#live-demo"
             >
               <Clock3 className="h-5 w-5 text-sky-600 transition group-hover:rotate-12" />
-              Try a call now
+              Open preview
             </a>
           </div>
         </div>
