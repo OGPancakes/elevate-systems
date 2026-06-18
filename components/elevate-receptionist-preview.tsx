@@ -18,53 +18,22 @@ import {
   Zap
 } from "lucide-react";
 
-type PreviewStatus = "idle" | "dialing" | "ringing" | "talking" | "done" | "error";
+type PreviewStatus = "idle" | "starting" | "queued" | "ringing" | "in-progress" | "completed" | "error";
 
-const callMoments = [
-  {
-    speaker: "Maya",
-    text: "Hi, this is Maya with Brightline Studio. I can help with questions, availability, or booking a consultation. How can I help today?",
-    intent: "Greeting",
-    importance: 2,
-    fields: { reason: "Opening call", nextStep: "Discover need" },
-    goals: [true, false, false, false],
-  },
-  {
-    speaker: "Caller",
-    text: "Hi, I wanted to ask about booking a consultation for a home service project this week.",
-    intent: "Home services",
-    importance: 7,
-    fields: { reason: "Home service consultation", urgency: "This week" },
-    goals: [true, true, false, false],
-  },
-  {
-    speaker: "Maya",
-    text: "Absolutely. I can help with that. What type of project is it, and what day would work best for a quick callback?",
-    intent: "Booking request",
-    importance: 8,
-    fields: { service: "Project intake", nextStep: "Collect timing" },
-    goals: [true, true, true, false],
-  },
-  {
-    speaker: "Live note",
-    text: "Qualified lead: home services, consultation request, this-week timing, high-intent callback.",
-    intent: "Qualified lead",
-    importance: 9,
-    fields: { status: "Qualified", ownerNote: "Ready for team follow-up" },
-    goals: [true, true, true, true],
-  },
-];
-
-const goals = ["Identify need", "Classify intent", "Score urgency", "Create handoff"];
-
-const statusCopy: Record<PreviewStatus, string> = {
-  idle: "Enter your number to launch a private preview session.",
-  dialing: "Creating your session and preparing Maya...",
-  ringing: "Dialing your phone and opening a live call room.",
-  talking: "Maya is listening, scoring, and building the lead.",
-  done: "Preview started. Your call room is ready.",
-  error: "The preview could not start.",
+type PreviewCall = {
+  callSid: string;
+  to: string;
+  status: string;
+  detail: string;
+  updatedAt: string;
 };
+
+const goals = [
+  { label: "Outbound call placed", statuses: ["queued", "initiated", "ringing", "in-progress", "answered", "completed"] },
+  { label: "Visitor phone reached", statuses: ["ringing", "in-progress", "answered", "completed"] },
+  { label: "Receptionist connected", statuses: ["in-progress", "answered", "completed"] },
+  { label: "Call completed", statuses: ["completed"] },
+];
 
 const keypad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "Del", "0", "Call"];
 
@@ -75,60 +44,76 @@ const formatPhone = (value: string) => {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 };
 
-const sessionId = () => `ER-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+const newSessionId = () => `ER-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+
+const normalizedStatus = (status: string): PreviewStatus => {
+  const value = status.toLowerCase();
+  if (value === "initiated") return "queued";
+  if (value === "answered") return "in-progress";
+  if (["queued", "ringing", "in-progress", "completed"].includes(value)) return value as PreviewStatus;
+  return "queued";
+};
+
+const statusLabel = (status: PreviewStatus) => {
+  switch (status) {
+    case "idle":
+      return "Enter your number to start a real call.";
+    case "starting":
+      return "Requesting a real Twilio preview call...";
+    case "queued":
+      return "Call created. Twilio is dialing.";
+    case "ringing":
+      return "Your phone is ringing.";
+    case "in-progress":
+      return "Connected. Talk to Maya now.";
+    case "completed":
+      return "Call completed.";
+    case "error":
+      return "The call could not start.";
+  }
+};
+
+const statusIsComplete = (status: string, accepted: string[]) =>
+  accepted.includes(status.toLowerCase()) || accepted.includes(normalizedStatus(status));
 
 export function ElevateReceptionistPreview() {
   const [phone, setPhone] = useState("");
+  const [session, setSession] = useState("ER-READY");
   const [status, setStatus] = useState<PreviewStatus>("idle");
-  const [message, setMessage] = useState(statusCopy.idle);
-  const [activeMoment, setActiveMoment] = useState(0);
-  const [typedText, setTypedText] = useState("");
-  const [session, setSession] = useState("ER-DEMO");
+  const [call, setCall] = useState<PreviewCall | null>(null);
+  const [error, setError] = useState("");
 
   const digits = useMemo(() => phone.replace(/\D/g, ""), [phone]);
-  const canSubmit = digits.length === 10 && status !== "dialing" && status !== "ringing";
-  const current = callMoments[Math.min(activeMoment, callMoments.length - 1)];
-  const completion = current.goals.filter(Boolean).length;
-  const leadFields = [
-    { label: "Caller", value: phone || "Waiting for number", Icon: UserRoundCheck },
-    { label: "Need", value: current.fields.reason ?? "Listening for need", Icon: Sparkles },
-    { label: "Urgency", value: current.fields.urgency ?? "Not scored yet", Icon: Zap },
-    { label: "Next step", value: current.fields.nextStep ?? current.fields.ownerNote ?? "Pending", Icon: CalendarCheck },
-    { label: "Service", value: current.fields.service ?? current.fields.status ?? "Classifying", Icon: BriefcaseBusiness },
-    { label: "Location", value: "Captured if provided", Icon: MapPin },
-  ];
+  const canSubmit = digits.length === 10 && status !== "starting";
+  const activeStatus = call?.status ? normalizedStatus(call.status) : status;
+  const completedGoals = goals.filter((goal) => call && statusIsComplete(call.status, goal.statuses)).length;
 
   useEffect(() => {
-    if (status !== "talking" && status !== "done") return;
-    setActiveMoment(0);
-    setTypedText("");
-
-    const timers = callMoments.map((moment, index) =>
-      window.setTimeout(() => {
-        setActiveMoment(index);
-        setTypedText(moment.text);
-      }, 500 + index * 1500),
-    );
-
-    return () => timers.forEach(window.clearTimeout);
-  }, [status]);
+    if (!call?.callSid || activeStatus === "completed") return;
+    const timer = window.setInterval(async () => {
+      try {
+        const response = await fetch(`/api/receptionist/preview?callSid=${encodeURIComponent(call.callSid)}`, {
+          cache: "no-store",
+        });
+        const data = await response.json() as { ok?: boolean; call?: PreviewCall | null };
+        if (data.ok && data.call) {
+          setCall(data.call);
+          setStatus(normalizedStatus(data.call.status));
+        }
+      } catch {
+        // Keep the current state visible if a poll misses.
+      }
+    }, 1800);
+    return () => window.clearInterval(timer);
+  }, [call?.callSid, activeStatus]);
 
   const startPreview = async () => {
     if (!canSubmit) return;
-    setSession(sessionId());
-    setStatus("dialing");
-    setMessage(statusCopy.dialing);
-    setActiveMoment(0);
-    setTypedText("");
-
-    window.setTimeout(() => {
-      setStatus("ringing");
-      setMessage(statusCopy.ringing);
-    }, 650);
-    window.setTimeout(() => {
-      setStatus("talking");
-      setMessage(statusCopy.talking);
-    }, 1500);
+    const nextSession = newSessionId();
+    setSession(nextSession);
+    setStatus("starting");
+    setCall(null);
+    setError("");
 
     try {
       const response = await fetch("/api/receptionist/preview", {
@@ -136,19 +121,24 @@ export function ElevateReceptionistPreview() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone }),
       });
-      const data = await response.json() as { ok?: boolean; mode?: string; error?: string; message?: string };
-      if (!response.ok || !data.ok) {
+      const data = await response.json() as { ok?: boolean; callSid?: string; status?: string; error?: string };
+      if (!response.ok || !data.ok || !data.callSid) {
         setStatus("error");
-        setMessage(data.error ?? statusCopy.error);
+        setError(data.error ?? "The phone preview could not start.");
         return;
       }
-      window.setTimeout(() => {
-        setStatus("done");
-        setMessage(data.mode === "demo" ? "Demo call room running. Add Twilio env vars for real outbound calls." : statusCopy.done);
-      }, 6400);
+      const nextCall: PreviewCall = {
+        callSid: data.callSid,
+        to: phone,
+        status: data.status ?? "queued",
+        detail: "Twilio accepted the preview call. Watch the live status here.",
+        updatedAt: new Date().toISOString(),
+      };
+      setCall(nextCall);
+      setStatus(normalizedStatus(nextCall.status));
     } catch {
       setStatus("error");
-      setMessage("Something blocked the preview request. Try again in a moment.");
+      setError("Something blocked the preview request. Try again in a moment.");
     }
   };
 
@@ -177,16 +167,18 @@ export function ElevateReceptionistPreview() {
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-sky-300">Private phone preview</p>
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-sky-300">Real phone preview</p>
               <h2 className="mt-2 text-2xl font-black">Live AI command center</h2>
               <p className="mt-2 text-sm leading-6 text-white/45">
-                Each visitor gets a separate preview room. Watch Maya listen, classify, score, and build the handoff.
+                Enter your number and this starts an actual outbound Twilio call to you.
               </p>
             </div>
             <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${
-              status === "idle" ? "bg-white/10 text-white/60" : status === "error" ? "bg-rose-400/15 text-rose-200" : "bg-emerald-400/15 text-emerald-200"
+              activeStatus === "idle" ? "bg-white/10 text-white/60" : activeStatus === "error" ? "bg-rose-400/15 text-rose-200" : "bg-emerald-400/15 text-emerald-200"
             }`}>
-              {status === "dialing" || status === "ringing" ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneCall className="h-6 w-6" />}
+              {activeStatus === "starting" || activeStatus === "queued" || activeStatus === "ringing"
+                ? <Loader2 className="h-6 w-6 animate-spin" />
+                : <PhoneCall className="h-6 w-6" />}
             </div>
           </div>
 
@@ -195,7 +187,7 @@ export function ElevateReceptionistPreview() {
               Session {session}
             </span>
             <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white/50">
-              Isolated preview room
+              {call?.callSid ? `Call ${call.callSid.slice(-8)}` : "Waiting for call"}
             </span>
             <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-100">
               No restaurant routing
@@ -217,15 +209,15 @@ export function ElevateReceptionistPreview() {
                 disabled={!canSubmit}
                 type="submit"
               >
-                Call me
+                {status === "starting" ? "Calling..." : "Call me"}
                 <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
               </button>
             </div>
-            <p className="mt-3 text-xs leading-5 text-white/38">Only enter your own number. By pressing Call me, you agree to receive one demo call.</p>
+            <p className="mt-3 text-xs leading-5 text-white/38">Only enter your own number. This sends one real preview call.</p>
           </form>
 
-          <div className="mt-5 grid gap-4 xl:grid-cols-[0.74fr_1.26fr]">
-            <div className="space-y-4">
+          <div className="mt-5 grid max-h-[650px] gap-4 overflow-hidden xl:grid-cols-[0.74fr_1.26fr]">
+            <div className="min-h-0 space-y-4 overflow-y-auto pr-1">
               <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.035] p-4">
                 <div className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-violet-200">
                   <Keyboard className="h-4 w-4" />
@@ -251,37 +243,37 @@ export function ElevateReceptionistPreview() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-sky-200">
                     <Radio className="h-4 w-4" />
-                    Listening
+                    Call status
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">{status}</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">{activeStatus}</span>
                 </div>
                 <div className="mt-5 flex h-20 items-end justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.035] px-4 pb-4">
                   {Array.from({ length: 18 }).map((_, index) => (
                     <span
                       className={`w-1.5 rounded-full bg-gradient-to-t from-violet-400 to-sky-300 transition-all duration-300 ${
-                        status === "talking" || status === "done" ? "animate-pulse opacity-90" : "opacity-25"
+                        ["queued", "ringing", "in-progress"].includes(activeStatus) ? "animate-pulse opacity-90" : "opacity-25"
                       }`}
                       key={index}
-                      style={{ height: `${18 + ((index * 13 + activeMoment * 19) % 48)}px`, animationDelay: `${index * 45}ms` }}
+                      style={{ height: `${18 + ((index * 13) % 48)}px`, animationDelay: `${index * 45}ms` }}
                     />
                   ))}
                 </div>
-                <p className="mt-3 flex items-center gap-2 text-sm font-bold text-white/70">
-                  {status === "done" ? <CheckCircle2 className="h-4 w-4 text-emerald-200" /> : <Mic2 className="h-4 w-4 text-sky-200" />}
-                  {message}
+                <p className="mt-3 flex items-start gap-2 text-sm font-bold leading-6 text-white/70">
+                  {activeStatus === "completed" ? <CheckCircle2 className="mt-1 h-4 w-4 text-emerald-200" /> : <Mic2 className="mt-1 h-4 w-4 text-sky-200" />}
+                  <span>{error || call?.detail || statusLabel(activeStatus)}</span>
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="min-h-0 space-y-4 overflow-y-auto pr-1">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.04] p-4">
                   <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-sky-200">
                     <BrainCircuit className="h-4 w-4" />
                     Intent
                   </div>
-                  <p className="mt-3 text-2xl font-black">{current.intent}</p>
-                  <p className="mt-1 text-xs text-white/40">Updated from live conversation</p>
+                  <p className="mt-3 text-2xl font-black">{activeStatus === "in-progress" ? "Live front desk call" : "Waiting for caller"}</p>
+                  <p className="mt-1 text-xs text-white/40">Will update from the active phone session.</p>
                 </div>
                 <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.04] p-4">
                   <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-violet-200">
@@ -289,11 +281,11 @@ export function ElevateReceptionistPreview() {
                     Importance
                   </div>
                   <div className="mt-3 flex items-end gap-2">
-                    <p className="text-3xl font-black">{current.importance}</p>
-                    <p className="pb-1 text-sm font-bold text-white/35">/ 10</p>
+                    <p className="text-3xl font-black">{activeStatus === "in-progress" ? "Live" : "--"}</p>
+                    <p className="pb-1 text-sm font-bold text-white/35">{activeStatus === "in-progress" ? "" : "/ 10"}</p>
                   </div>
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                    <span className="block h-full rounded-full bg-gradient-to-r from-sky-400 to-violet-400 transition-all duration-700" style={{ width: `${current.importance * 10}%` }} />
+                    <span className="block h-full rounded-full bg-gradient-to-r from-sky-400 to-violet-400 transition-all duration-700" style={{ width: activeStatus === "in-progress" ? "70%" : "8%" }} />
                   </div>
                 </div>
               </div>
@@ -305,17 +297,24 @@ export function ElevateReceptionistPreview() {
                     Live lead handoff
                   </div>
                   <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white/50">
-                    {completion}/4 goals
+                    {completedGoals}/4 steps
                   </span>
                 </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {leadFields.map(({ label, value, Icon }) => (
+                  {[
+                    { label: "Caller", value: call?.to || phone || "Waiting for number", Icon: UserRoundCheck },
+                    { label: "Call SID", value: call?.callSid ? call.callSid.slice(-12) : "Created after call starts", Icon: Sparkles },
+                    { label: "Status", value: call?.status || activeStatus, Icon: Zap },
+                    { label: "Next step", value: activeStatus === "completed" ? "Review call outcome" : "Talk with Maya", Icon: CalendarCheck },
+                    { label: "Service", value: "Captured during live call", Icon: BriefcaseBusiness },
+                    { label: "Location", value: "Captured if provided", Icon: MapPin },
+                  ].map(({ label, value, Icon }) => (
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-3 transition duration-300 hover:bg-white/[0.06]" key={label}>
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-white/34">
                         <Icon className="h-3.5 w-3.5" />
                         {label}
                       </div>
-                      <p className="mt-2 text-sm font-bold text-white/74">{value}</p>
+                      <p className="mt-2 truncate text-sm font-bold text-white/74" title={value}>{value}</p>
                     </div>
                   ))}
                 </div>
@@ -324,51 +323,42 @@ export function ElevateReceptionistPreview() {
               <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.035] p-4">
                 <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-violet-200">
                   <CheckCircle2 className="h-4 w-4" />
-                  Qualification goals
+                  Phone demo goals
                 </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {goals.map((goal, index) => (
-                    <div
-                      className={`flex items-center gap-3 rounded-2xl border p-3 transition duration-500 ${
-                        current.goals[index]
-                          ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-50"
-                          : "border-white/10 bg-black/15 text-white/45"
-                      }`}
-                      key={goal}
-                    >
-                      <span className={`flex h-7 w-7 items-center justify-center rounded-full ${
-                        current.goals[index] ? "bg-emerald-300/20" : "bg-white/10"
-                      }`}>
-                        {current.goals[index] ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
-                      </span>
-                      <span className="text-sm font-black">{goal}</span>
-                    </div>
-                  ))}
+                  {goals.map((goal, index) => {
+                    const complete = call ? statusIsComplete(call.status, goal.statuses) : false;
+                    return (
+                      <div
+                        className={`flex items-center gap-3 rounded-2xl border p-3 transition duration-500 ${
+                          complete
+                            ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-50"
+                            : "border-white/10 bg-black/15 text-white/45"
+                        }`}
+                        key={goal.label}
+                      >
+                        <span className={`flex h-7 w-7 items-center justify-center rounded-full ${
+                          complete ? "bg-emerald-300/20" : "bg-white/10"
+                        }`}>
+                          {complete ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
+                        </span>
+                        <span className="text-sm font-black">{goal.label}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
               <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.035] p-4">
                 <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-sky-200">
                   <Radio className="h-4 w-4" />
-                  Live transcript
+                  Live call room
                 </div>
-                <div className="mt-4 space-y-3">
-                  {callMoments.slice(0, status === "idle" ? 0 : activeMoment + 1).map((line, index) => (
-                    <div className={`rounded-2xl border p-3 ${
-                      line.speaker === "Maya" ? "border-sky-300/20 bg-sky-400/10"
-                        : line.speaker === "Live note" ? "border-violet-300/20 bg-violet-400/10"
-                          : "border-white/10 bg-white/[0.06]"
-                    }`} key={`${line.speaker}-${index}`}>
-                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/38">{line.speaker}</p>
-                      <p className="mt-1 text-sm leading-6 text-white/74">{index === activeMoment ? typedText : line.text}</p>
-                    </div>
-                  ))}
-                  {status === "idle" && (
-                    <div className="rounded-2xl border border-dashed border-white/10 p-5 text-center">
-                      <Sparkles className="mx-auto h-6 w-6 text-violet-200" />
-                      <p className="mt-3 text-sm leading-6 text-white/45">Start a session to see intent, urgency, goals, and transcript update live.</p>
-                    </div>
-                  )}
+                <div className="mt-4 max-h-44 overflow-y-auto rounded-2xl border border-dashed border-white/10 p-5 text-center">
+                  <Sparkles className="mx-auto h-6 w-6 text-violet-200" />
+                  <p className="mt-3 text-sm leading-6 text-white/45">
+                    The actual conversation happens on your phone. This panel stays contained and tracks the real call status without fake preset messages.
+                  </p>
                 </div>
               </div>
             </div>

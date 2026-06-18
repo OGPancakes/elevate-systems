@@ -1,5 +1,20 @@
 export const runtime = "nodejs";
 
+type PreviewCallEvent = {
+  callSid: string;
+  to: string;
+  status: string;
+  detail: string;
+  updatedAt: string;
+};
+
+const globalStore = globalThis as typeof globalThis & {
+  elevateReceptionistPreviewCalls?: Map<string, PreviewCallEvent>;
+};
+
+const previewCalls = globalStore.elevateReceptionistPreviewCalls ?? new Map<string, PreviewCallEvent>();
+globalStore.elevateReceptionistPreviewCalls = previewCalls;
+
 const normalizeUsPhone = (value: string) => {
   const digits = value.replace(/\D/g, "");
   if (digits.length === 10) return `+1${digits}`;
@@ -7,9 +22,60 @@ const normalizeUsPhone = (value: string) => {
   return "";
 };
 
+const displayPhone = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+  return value;
+};
+
+const callDetail = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "queued":
+    case "initiated":
+      return "Twilio accepted the preview and is dialing the visitor.";
+    case "ringing":
+      return "The visitor's phone is ringing.";
+    case "in-progress":
+    case "answered":
+      return "The preview call is connected to the receptionist assistant.";
+    case "completed":
+      return "The preview call ended.";
+    case "busy":
+    case "failed":
+    case "no-answer":
+    case "canceled":
+      return `The preview call ended with status: ${status}.`;
+    default:
+      return `Call status: ${status}.`;
+  }
+};
+
+export async function GET(request: Request) {
+  const callSid = new URL(request.url).searchParams.get("callSid") ?? "";
+  if (!callSid) return Response.json({ ok: false, error: "Missing callSid." }, { status: 400 });
+  return Response.json({
+    ok: true,
+    call: previewCalls.get(callSid) ?? null,
+  }, { headers: { "Cache-Control": "no-store, max-age=0" } });
+}
+
 export async function POST(request: Request) {
   const contentType = request.headers.get("content-type") ?? "";
   if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
+    const form = await request.formData();
+    const callSid = String(form.get("CallSid") ?? "");
+    const status = String(form.get("CallStatus") ?? form.get("CallStatusCallbackEvent") ?? "in-progress").toLowerCase();
+    if (callSid) {
+      previewCalls.set(callSid, {
+        callSid,
+        to: displayPhone(String(form.get("To") ?? "")),
+        status,
+        detail: callDetail(status),
+        updatedAt: new Date().toISOString(),
+      });
+    }
     return Response.json({ ok: true });
   }
 
@@ -26,10 +92,9 @@ export async function POST(request: Request) {
 
   if (!accountSid || !authToken || !from) {
     return Response.json({
-      ok: true,
-      mode: "demo",
-      message: "Preview animation started. Add Twilio env vars to place real outbound calls.",
-    });
+      ok: false,
+      error: "Phone preview is not configured yet. Add Twilio env vars so this button can place a real call.",
+    }, { status: 503 });
   }
 
   const params = new URLSearchParams({
@@ -63,5 +128,15 @@ export async function POST(request: Request) {
   }
 
   const data = await response.json() as { sid?: string; status?: string };
+  if (data.sid) {
+    const status = data.status ?? "queued";
+    previewCalls.set(data.sid, {
+      callSid: data.sid,
+      to: displayPhone(to),
+      status,
+      detail: callDetail(status),
+      updatedAt: new Date().toISOString(),
+    });
+  }
   return Response.json({ ok: true, mode: "live", callSid: data.sid, status: data.status ?? "queued" });
 }
