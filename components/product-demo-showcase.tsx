@@ -26,7 +26,8 @@ const products = [
     name: "Elevate Receptionist",
     description: "An AI front desk for calls, questions, qualification, and booking.",
     icon: PhoneCall,
-    status: "Coming soon"
+    status: "Live demo",
+    href: "/elevatereceptionist"
   },
   {
     name: "Elevate Leads",
