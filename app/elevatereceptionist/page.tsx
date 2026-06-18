@@ -70,36 +70,48 @@ export default function ElevateReceptionistPage() {
         <div className="absolute bottom-[-16rem] left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
       </div>
 
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8">
-        <Link
-          className="group inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/75 backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-sky-300/40 hover:bg-white/10 hover:text-white"
-          href="/demos"
-        >
-          <span className="h-2 w-2 rounded-full bg-sky-300 transition group-hover:scale-125" />
-          Back to demos
-        </Link>
-        <nav className="hidden items-center gap-6 text-sm font-semibold text-white/55 md:flex">
-          <a className="transition hover:text-white" href="#how-it-works">How it works</a>
-          <a className="transition hover:text-white" href="#live-demo">Live demo</a>
-          <a className="transition hover:text-white" href="#industries">Industries</a>
-        </nav>
+      <header className="relative z-10 border-b border-white/10 bg-[#050716]/70 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
+          <Link className="group flex items-center gap-4" href="/elevatereceptionist" aria-label="Elevate Receptionist home">
+            <Image
+              alt="Elevate Receptionist"
+              className="h-16 w-28 object-contain drop-shadow-[0_0_18px_rgba(80,160,255,0.28)] transition duration-300 group-hover:scale-[1.03]"
+              height={180}
+              priority
+              src="/elevate-receptionist-logo-transparent.png"
+              width={220}
+            />
+            <span className="hidden h-8 w-px bg-white/10 sm:block" />
+            <span className="hidden text-xs font-black uppercase tracking-[0.24em] text-sky-200/80 md:block">
+              AI front desk
+            </span>
+          </Link>
+          <nav className="hidden items-center gap-6 text-sm font-semibold text-white/55 md:flex">
+            <a className="transition hover:text-white" href="#how-it-works">How it works</a>
+            <a className="transition hover:text-white" href="#live-demo">Live demo</a>
+            <a className="transition hover:text-white" href="#industries">Industries</a>
+          </nav>
+          <Link
+            className="group inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/75 backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-sky-300/40 hover:bg-white/10 hover:text-white"
+            href="/demos"
+          >
+            <span className="h-2 w-2 rounded-full bg-sky-300 transition group-hover:scale-125" />
+            Back to demos
+          </Link>
+        </div>
       </header>
 
-      <section className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-5 pb-20 pt-8 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:pt-16">
+      <section className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-5 pb-20 pt-12 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:pt-20">
         <div>
-          <div className="mb-8 inline-flex items-center gap-4 rounded-[2rem] border border-white/10 bg-white/[0.06] p-3 pr-5 shadow-2xl shadow-sky-950/30 backdrop-blur">
+          <div className="mb-10 max-w-md">
             <Image
               alt="Elevate Receptionist logo"
-              className="h-16 w-16 rounded-2xl object-cover shadow-lg shadow-sky-500/20"
-              height={128}
+              className="h-auto w-72 object-contain drop-shadow-[0_0_35px_rgba(88,120,255,0.24)] sm:w-80"
+              height={300}
               priority
-              src="/elevate-receptionist-logo.png"
-              width={128}
+              src="/elevate-receptionist-logo-transparent.png"
+              width={420}
             />
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-sky-300">Elevate Receptionist</p>
-              <p className="mt-1 text-sm text-white/55">AI front desk demo</p>
-            </div>
           </div>
 
           <p className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.34em] text-violet-300">
