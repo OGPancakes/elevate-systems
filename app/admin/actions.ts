@@ -3,8 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireAdmin } from "@/lib/admin-auth";
-import { hashAdminPassword } from "@/lib/admin-auth";
+import { hashAdminPassword, requireAdmin } from "@/lib/admin-auth";
 import { deleteRecord, insertRecord, updateRecord } from "@/lib/supabase-admin";
 
 const allowedTables = new Set(["leads", "inquiries", "bookings", "purchases"]);
@@ -13,6 +12,11 @@ function safeTable(value: FormDataEntryValue | null) {
   const table = String(value ?? "");
   if (!allowedTables.has(table)) throw new Error("Invalid table.");
   return table;
+}
+
+function settingsRedirect(params: Record<string, string>) {
+  const query = new URLSearchParams(params);
+  redirect(`/admin/settings?${query.toString()}`);
 }
 
 export async function updateAdminRecord(formData: FormData) {
@@ -73,17 +77,24 @@ export async function addNotificationRecipient(formData: FormData) {
   const label = String(formData.get("label") ?? "").trim().slice(0, 80);
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error("Enter a valid notification email.");
+    settingsRedirect({ error: "Enter a valid notification email." });
   }
 
-  await insertRecord("notification_recipients", {
-    email,
-    label: label || null,
-    is_active: true
-  });
+  try {
+    await insertRecord("notification_recipients", {
+      email,
+      label: label || null,
+      is_active: true
+    });
+  } catch {
+    settingsRedirect({
+      error:
+        "Notification emails need the latest Supabase schema before they can be saved."
+    });
+  }
 
   revalidatePath("/admin/settings");
-  redirect("/admin/settings");
+  settingsRedirect({ saved: "notification-email" });
 }
 
 export async function removeNotificationRecipient(formData: FormData) {
@@ -91,7 +102,14 @@ export async function removeNotificationRecipient(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) throw new Error("Missing recipient ID.");
 
-  await updateRecord("notification_recipients", id, { is_active: false });
+  try {
+    await updateRecord("notification_recipients", id, { is_active: false });
+  } catch {
+    settingsRedirect({
+      error:
+        "Notification emails need the latest Supabase schema before they can be changed."
+    });
+  }
   revalidatePath("/admin/settings");
-  redirect("/admin/settings");
+  settingsRedirect({ saved: "notification-email" });
 }

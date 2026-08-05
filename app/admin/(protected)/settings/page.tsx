@@ -22,7 +22,12 @@ import {
   NotificationRecipientRecord
 } from "@/lib/supabase-admin";
 
-export default async function AdminSettingsPage() {
+export default async function AdminSettingsPage({
+  searchParams
+}: {
+  searchParams?: Promise<{ error?: string; saved?: string }>;
+}) {
+  const params = await searchParams;
   const teamMembers = await listRecords<AdminUserRecord>(
     "admin_users",
     "select=id,username,display_name,role,is_active,created_at&order=created_at.desc"
@@ -85,6 +90,16 @@ export default async function AdminSettingsPage() {
         eyebrow="Configuration"
         title="Settings"
       />
+      {params?.error ? (
+        <div className="mb-5 max-w-3xl rounded-lg border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
+          {params.error}
+        </div>
+      ) : null}
+      {params?.saved ? (
+        <div className="mb-5 max-w-3xl rounded-lg border border-emerald-300/20 bg-emerald-300/10 p-4 text-sm leading-6 text-emerald-100">
+          Settings updated.
+        </div>
+      ) : null}
       <div className="grid gap-3 max-w-3xl">
         {settings.map((item) => (
           <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] p-5" key={item.label}>
