@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { sendLeadNotification } from "@/lib/notification-emails";
 import { insertRecord } from "@/lib/supabase-admin";
 
 type LeadPayload = {
@@ -63,19 +64,9 @@ async function saveInquiry(lead: LeadPayload) {
 }
 
 async function sendNotification(lead: LeadPayload) {
-  if (!process.env.RESEND_API_KEY || !process.env.LEAD_NOTIFICATION_EMAIL) return;
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      from: process.env.RESEND_FROM_EMAIL ?? "Elevate Systems <leads@elevatesystems.us>",
-      to: [process.env.LEAD_NOTIFICATION_EMAIL],
-      subject: `New website inquiry: ${lead.company}`,
-      text: `${lead.name}\n${lead.email}\n${lead.phone || ""}\n${lead.company}\n${lead.serviceInterest || ""}\n\n${lead.message}`
-    })
+  await sendLeadNotification({
+    subject: `New website inquiry: ${lead.company}`,
+    text: `${lead.name}\n${lead.email}\n${lead.phone || ""}\n${lead.company}\n${lead.serviceInterest || ""}\n\n${lead.message}`
   });
 }
 

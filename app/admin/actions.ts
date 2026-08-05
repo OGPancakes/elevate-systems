@@ -66,3 +66,32 @@ export async function createTeamMember(formData: FormData) {
   revalidatePath("/admin/settings");
   redirect("/admin/settings");
 }
+
+export async function addNotificationRecipient(formData: FormData) {
+  await requireAdmin();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const label = String(formData.get("label") ?? "").trim().slice(0, 80);
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("Enter a valid notification email.");
+  }
+
+  await insertRecord("notification_recipients", {
+    email,
+    label: label || null,
+    is_active: true
+  });
+
+  revalidatePath("/admin/settings");
+  redirect("/admin/settings");
+}
+
+export async function removeNotificationRecipient(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) throw new Error("Missing recipient ID.");
+
+  await updateRecord("notification_recipients", id, { is_active: false });
+  revalidatePath("/admin/settings");
+  redirect("/admin/settings");
+}

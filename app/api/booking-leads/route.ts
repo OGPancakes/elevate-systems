@@ -6,6 +6,7 @@ import {
   formatBookingTime,
   isAllowedBookingSlot
 } from "@/lib/booking-schedule";
+import { sendLeadNotification } from "@/lib/notification-emails";
 import { insertRecord } from "@/lib/supabase-admin";
 
 type BookingLead = {
@@ -33,23 +34,13 @@ async function sendToMake(lead: BookingLead) {
 }
 
 async function sendNotification(lead: BookingLead) {
-  const recipients = process.env.LEAD_NOTIFICATION_EMAIL;
-  if (!process.env.RESEND_API_KEY || !recipients) return;
   const scheduledFor = lead.selectedDateTime
     ? formatBookingTime(lead.selectedDateTime)
     : "Not selected";
 
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      from: process.env.RESEND_FROM_EMAIL ?? "Elevate Systems <leads@elevatesystems.us>",
-      to: recipients.split(",").map((email) => email.trim()),
-      subject: `New call booked: ${lead.businessName}`,
-      html: `<h2>New Strategy Call</h2>
+  await sendLeadNotification({
+    subject: `New call booked: ${lead.businessName}`,
+    html: `<h2>New Strategy Call</h2>
         <p><strong>Name:</strong> ${lead.name}</p>
         <p><strong>Business:</strong> ${lead.businessName}</p>
         <p><strong>Email:</strong> ${lead.email}</p>
@@ -59,7 +50,6 @@ async function sendNotification(lead: BookingLead) {
         <p><strong>Service:</strong> ${lead.serviceInterest ?? ""}</p>
         <p><strong>Goals:</strong> ${lead.message}</p>
         <p><strong>Submitted:</strong> ${lead.submittedAt}</p>`
-    })
   });
 }
 

@@ -6,6 +6,14 @@ export type BookingStatus = "Upcoming" | "Completed" | "Cancelled" | "No-show";
 export type PurchaseStatus = "Pending" | "Paid" | "Failed" | "Refunded";
 export type AdminRole = "Admin" | "User" | "Independent Contractor";
 
+export type NotificationRecipientRecord = {
+  id: string;
+  email: string;
+  label: string | null;
+  is_active: boolean;
+  created_at: string;
+};
+
 export type LeadRecord = {
   id: string;
   name: string;

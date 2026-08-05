@@ -2,6 +2,7 @@ import { isIP } from "node:net";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
+import { sendLeadNotification } from "@/lib/notification-emails";
 import { insertRecord } from "@/lib/supabase-admin";
 
 type OpportunityResult = {
@@ -215,24 +216,14 @@ async function notifyLead(lead: {
   websiteUrl: string;
   result: OpportunityResult;
 }) {
-  if (!process.env.RESEND_API_KEY || !process.env.LEAD_NOTIFICATION_EMAIL) return;
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      from: process.env.RESEND_FROM_EMAIL ?? "Elevate Systems <leads@elevatesystems.us>",
-      to: process.env.LEAD_NOTIFICATION_EMAIL.split(",").map((email) => email.trim()),
-      subject: `AI Solutions scan: ${lead.businessName}`,
-      text: `${lead.name}
+  await sendLeadNotification({
+    subject: `AI Solutions scan: ${lead.businessName}`,
+    text: `${lead.name}
 ${lead.email}
 ${lead.businessName}
 ${lead.websiteUrl}
 Opportunity score: ${lead.result.score}
 Recommended: ${lead.result.recommendedSolution}`
-    })
   });
 }
 

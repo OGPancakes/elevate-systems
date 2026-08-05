@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
+import { sendLeadNotification } from "@/lib/notification-emails";
 import { insertRecord, updateRecordBy } from "@/lib/supabase-admin";
 
 type AuditResult = {
@@ -541,20 +542,9 @@ async function saveUnifiedLead(lead: AuditLead) {
 }
 
 async function sendNotification(lead: AuditLead) {
-  const recipients = process.env.LEAD_NOTIFICATION_EMAIL;
-  if (!process.env.RESEND_API_KEY || !recipients) return;
-
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      from: process.env.RESEND_FROM_EMAIL ?? "Elevate Systems <leads@elevatesystems.us>",
-      to: recipients.split(",").map((email) => email.trim()),
-      subject: `New website audit lead: ${lead.businessName}`,
-      html: `<h2>New Website Audit Lead</h2>
+  await sendLeadNotification({
+    subject: `New website audit lead: ${lead.businessName}`,
+    html: `<h2>New Website Audit Lead</h2>
         <p><strong>Name:</strong> ${lead.name}</p>
         <p><strong>Business:</strong> ${lead.businessName}</p>
         <p><strong>Email:</strong> ${lead.email}</p>
@@ -562,7 +552,6 @@ async function sendNotification(lead: AuditLead) {
         <p><strong>Submitted:</strong> ${lead.submittedAt}</p>
         <h3>AI Summary</h3>
         <p>${lead.audit.summary}</p>`
-    })
   });
 }
 
