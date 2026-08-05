@@ -75,7 +75,7 @@ export const solutionTiers = [
     id: "custom-ai-operations",
     name: "Custom AI Operations",
     setupRange: "$100-$500",
-    monthlyRange: "$100-$500/mo",
+    monthlyRange: "$100-$2,500/mo",
     price: "Custom",
     suffix: "setup + monthly subscription",
     description: "Every project is scoped around the business, the workflow, and how much AI support is actually needed.",

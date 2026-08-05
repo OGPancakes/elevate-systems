@@ -410,15 +410,18 @@ export function AiSolutionsExperience({
             <article className={`relative flex h-full flex-col border p-6 ${tier.featured ? "border-sky-300/50 bg-sky-300/[0.07]" : "border-white/10 bg-white/[0.025]"}`} key={tier.id}>
               {tier.featured ? <span className="absolute right-4 top-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-300">Custom only</span> : null}
               <h3 className="text-xl font-semibold text-white">{tier.name}</h3>
-              <div className="mt-6 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2">
-                <div className="bg-[#07101d] p-5">
+              <div className="mt-6 grid overflow-hidden border border-white/10 bg-white/[0.04] md:grid-cols-2">
+                <div className="border-b border-white/10 bg-[#07101d] p-5 md:border-b-0 md:border-r">
                   <p className="text-xs uppercase tracking-[0.16em] text-white/35">Setup fee</p>
-                  <p className="mt-2 text-4xl font-semibold text-white">{tier.setupRange}</p>
+                  <p className="mt-2 whitespace-nowrap text-[clamp(2rem,4vw,2.6rem)] font-semibold leading-none text-white">{tier.setupRange}</p>
                   <p className="mt-2 text-xs text-white/35">quoted before build starts</p>
                 </div>
                 <div className="bg-[#07101d] p-5">
                   <p className="text-xs uppercase tracking-[0.16em] text-white/35">Monthly subscription</p>
-                  <p className="mt-2 text-4xl font-semibold text-white">{tier.monthlyRange}</p>
+                  <p className="mt-2 text-[clamp(1.9rem,3.5vw,2.45rem)] font-semibold leading-none text-white">
+                    {tier.monthlyRange.replace("/mo", "")}
+                    <span className="block pt-2 text-sm font-medium leading-none text-white/45 sm:inline sm:pl-1 sm:pt-0">per month</span>
+                  </p>
                   <p className="mt-2 text-xs text-white/35">based on usage and support</p>
                 </div>
               </div>
