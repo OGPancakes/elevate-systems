@@ -52,23 +52,35 @@ export async function createTeamMember(formData: FormData) {
   const role = String(formData.get("role") ?? "");
 
   if (!username || !displayName || password.length < 8) {
-    throw new Error("Username, display name, and an 8+ character password are required.");
+    settingsRedirect({
+      error: "Username, display name, and an 8+ character password are required."
+    });
   }
 
   if (!["Admin", "User", "Independent Contractor"].includes(role)) {
-    throw new Error("Invalid role.");
+    settingsRedirect({ error: "Choose a valid team member role." });
   }
 
-  await insertRecord("admin_users", {
-    username,
-    display_name: displayName,
-    role,
-    password_hash: hashAdminPassword(password),
-    is_active: true
-  });
+  try {
+    await insertRecord("admin_users", {
+      username,
+      display_name: displayName,
+      role,
+      password_hash: hashAdminPassword(password),
+      is_active: true
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("23505") || message.toLowerCase().includes("duplicate")) {
+      settingsRedirect({ error: "That username already exists. Choose another username." });
+    }
+    settingsRedirect({
+      error: "Team accounts need the latest Supabase schema before they can be saved."
+    });
+  }
 
   revalidatePath("/admin/settings");
-  redirect("/admin/settings");
+  settingsRedirect({ saved: "team-member" });
 }
 
 export async function addNotificationRecipient(formData: FormData) {
