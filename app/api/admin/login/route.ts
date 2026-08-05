@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  if (!verifyAdminCredentials(username, password)) {
+  if (!(await verifyAdminCredentials(username, password))) {
     const url = new URL("/admin/login", request.url);
     url.searchParams.set("error", "invalid");
     return NextResponse.redirect(url, { status: 303 });

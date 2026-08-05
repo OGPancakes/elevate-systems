@@ -398,39 +398,63 @@ export function AiSolutionsExperience({
           </div>
         ) : null}
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">Engagement Options</p>
-          <h1 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">Start focused. Expand when the system proves useful.</h1>
-          <p className="mt-5 leading-8 text-white/55">Clear starting points for common implementations. Final scope is confirmed before work begins.</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">Custom pricing</p>
+          <h1 className="mt-3 text-3xl font-semibold text-white sm:text-5xl">Every AI system is scoped around the business.</h1>
+          <p className="mt-5 leading-8 text-white/55">
+            Most projects include a setup fee and a monthly subscription. The exact price depends on
+            how much AI you want, what tools we connect, and how much support the system needs.
+          </p>
         </div>
-        <div className="mt-10 grid auto-rows-fr gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto mt-10 grid max-w-5xl auto-rows-fr gap-4 lg:grid-cols-[1.05fr_0.95fr]">
           {solutionTiers.map((tier) => (
             <article className={`relative flex h-full flex-col border p-6 ${tier.featured ? "border-sky-300/50 bg-sky-300/[0.07]" : "border-white/10 bg-white/[0.025]"}`} key={tier.id}>
-              {tier.featured ? <span className="absolute right-4 top-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-300">Most complete</span> : null}
+              {tier.featured ? <span className="absolute right-4 top-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-300">Custom only</span> : null}
               <h3 className="text-xl font-semibold text-white">{tier.name}</h3>
-              <p className="mt-5 text-4xl font-semibold text-white">{tier.price}</p>
-              <p className="mt-2 text-xs text-white/35">{tier.suffix}</p>
-              <p className="mt-5 min-h-20 leading-7 text-white/55">{tier.description}</p>
+              <div className="mt-6 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2">
+                <div className="bg-[#07101d] p-5">
+                  <p className="text-xs uppercase tracking-[0.16em] text-white/35">Setup fee</p>
+                  <p className="mt-2 text-4xl font-semibold text-white">{tier.setupRange}</p>
+                  <p className="mt-2 text-xs text-white/35">quoted before build starts</p>
+                </div>
+                <div className="bg-[#07101d] p-5">
+                  <p className="text-xs uppercase tracking-[0.16em] text-white/35">Monthly subscription</p>
+                  <p className="mt-2 text-4xl font-semibold text-white">{tier.monthlyRange}</p>
+                  <p className="mt-2 text-xs text-white/35">based on usage and support</p>
+                </div>
+              </div>
+              <p className="mt-5 leading-7 text-white/55">{tier.description}</p>
               <ul className="mt-6 flex-1 space-y-3">
                 {tier.features.map((feature) => (
                   <li className="flex gap-3 text-sm text-white/65" key={feature}><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />{feature}</li>
                 ))}
               </ul>
-              {stripeReady && tier.price !== "Custom" ? (
-                <Button className="mt-8 w-full" disabled={checkoutLoading === tier.id} onClick={() => startCheckout(tier.id)}>
-                  {checkoutLoading === tier.id ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  Purchase Securely
-                </Button>
-              ) : (
-                <Button asChild className="mt-8 w-full" variant={tier.featured ? "default" : "secondary"}>
-                  <Link href="/book">{tier.price === "Custom" ? "Scope This System" : "Request This Package"}<ArrowRight className="h-4 w-4" /></Link>
-                </Button>
-              )}
+              <Button asChild className="mt-8 w-full">
+                <Link href="/book">Scope My System<ArrowRight className="h-4 w-4" /></Link>
+              </Button>
             </article>
           ))}
+          <aside className="border border-white/10 bg-white/[0.025] p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-300">What changes the price</p>
+            <div className="mt-6 space-y-5">
+              {[
+                ["AI depth", "A simple assistant is different from a receptionist, ordering flow, SMS follow-up, and CRM automation working together."],
+                ["Integrations", "Connecting calendars, forms, HubSpot, Make, email, phone, or custom tools affects setup time."],
+                ["Ongoing support", "Monthly pricing depends on monitoring, improvements, usage, and how hands-on you want us to be."]
+              ].map(([title, copy]) => (
+                <div className="border-l-2 border-sky-300/40 pl-4" key={title}>
+                  <p className="font-medium text-white">{title}</p>
+                  <p className="mt-2 text-sm leading-6 text-white/45">{copy}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-7 rounded-md border border-white/10 bg-black/20 p-4 text-sm leading-6 text-white/50">
+              The ranges are there to set expectations. Final pricing is confirmed after a short call.
+            </p>
+          </aside>
         </div>
         <div className="mt-6 flex items-center justify-center gap-2 text-xs text-white/35">
           <LockKeyhole className="h-4 w-4" />
-          {stripeReady ? "Payments are processed securely by Stripe." : "Online checkout will appear when Stripe pricing is connected."}
+          Custom scope first. No fixed packages or surprise checkout.
         </div>
       </section>
       ) : null}

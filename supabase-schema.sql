@@ -130,6 +130,17 @@ create table if not exists purchases (
   created_at timestamptz not null default now()
 );
 
+create table if not exists admin_users (
+  id uuid primary key default gen_random_uuid(),
+  username text not null unique,
+  display_name text not null,
+  role text not null default 'User'
+    check (role in ('Admin', 'User', 'Independent Contractor')),
+  password_hash text not null,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists leads_created_at_idx on leads (created_at desc);
 create index if not exists leads_status_idx on leads (status);
 create index if not exists leads_email_idx on leads (lower(email));
@@ -144,12 +155,14 @@ create index if not exists bot_conversations_lead_id_idx on bot_conversations (l
 create index if not exists purchases_created_at_idx on purchases (created_at desc);
 create index if not exists purchases_status_idx on purchases (status);
 create index if not exists purchases_customer_email_idx on purchases (lower(customer_email));
+create index if not exists admin_users_username_idx on admin_users (lower(username));
 
 alter table leads enable row level security;
 alter table inquiries enable row level security;
 alter table bookings enable row level security;
 alter table bot_conversations enable row level security;
 alter table purchases enable row level security;
+alter table admin_users enable row level security;
 
 -- Optional durable storage for Elevate Orders phone activity. The live demo
 -- works without this table; production can persist the same events here.

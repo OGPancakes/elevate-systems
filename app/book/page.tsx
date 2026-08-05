@@ -32,10 +32,10 @@ export default function BookPage() {
           <Link className="flex items-center gap-3" href="/">
             <Image
               alt="Elevate Systems logo"
-              className="h-10 w-10 rounded-md object-cover"
-              height={40}
+              className="h-12 w-12 rounded-md object-contain"
+              height={48}
               src="/elevate-logo-transparent.png"
-              width={40}
+              width={48}
               priority
             />
             <div>

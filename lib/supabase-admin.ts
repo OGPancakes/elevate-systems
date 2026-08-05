@@ -4,6 +4,7 @@ export type LeadStatus = "New" | "Contacted" | "Booked" | "Closed" | "Lost";
 export type InquiryStatus = "New" | "Contacted" | "Closed" | "Spam";
 export type BookingStatus = "Upcoming" | "Completed" | "Cancelled" | "No-show";
 export type PurchaseStatus = "Pending" | "Paid" | "Failed" | "Refunded";
+export type AdminRole = "Admin" | "User" | "Independent Contractor";
 
 export type LeadRecord = {
   id: string;
@@ -86,6 +87,16 @@ export type PurchaseRecord = {
   status: PurchaseStatus;
   notes: string;
   paid_at: string | null;
+  created_at: string;
+};
+
+export type AdminUserRecord = {
+  id: string;
+  username: string;
+  display_name: string;
+  role: AdminRole;
+  password_hash: string;
+  is_active: boolean;
   created_at: string;
 };
 

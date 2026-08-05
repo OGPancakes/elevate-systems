@@ -64,7 +64,7 @@ async function sendNotification(lead: BookingLead) {
 }
 
 async function saveBooking(lead: BookingLead) {
-  return insertRecord<{ id: string }>("bookings", {
+  const baseRecord = {
     name: lead.name,
     email: lead.email,
     phone: lead.phone || null,
@@ -75,10 +75,22 @@ async function saveBooking(lead: BookingLead) {
     service_interest: lead.serviceInterest || null,
     source: "Book a Call",
     status: "Upcoming",
-    duration_minutes: BOOKING_DURATION_MINUTES,
-    timezone: BOOKING_TIME_ZONE,
     booked_at: lead.submittedAt
-  });
+  };
+
+  try {
+    return await insertRecord<{ id: string }>("bookings", {
+      ...baseRecord,
+      duration_minutes: BOOKING_DURATION_MINUTES,
+      timezone: BOOKING_TIME_ZONE
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("duration_minutes") || message.includes("timezone")) {
+      return insertRecord<{ id: string }>("bookings", baseRecord);
+    }
+    throw error;
+  }
 }
 
 export async function POST(request: Request) {
@@ -130,6 +142,7 @@ export async function POST(request: Request) {
   }
 
   let booking: { id: string } | null = null;
+  let stored = true;
   try {
     booking = await saveBooking(lead);
   } catch (error) {
@@ -140,10 +153,7 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
-    return NextResponse.json(
-      { error: "We could not reserve that time. Please try again." },
-      { status: 500 }
-    );
+    stored = false;
   }
 
   await Promise.allSettled([sendToMake(lead), sendNotification(lead)]);
@@ -152,6 +162,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: true,
       bookingId: booking?.id,
+      stored,
       startsAt: lead.selectedDateTime,
       formattedTime: formatBookingTime(lead.selectedDateTime),
       durationMinutes: BOOKING_DURATION_MINUTES,

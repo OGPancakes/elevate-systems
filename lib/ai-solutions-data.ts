@@ -72,51 +72,21 @@ export const aiSolutionServices = [
 
 export const solutionTiers = [
   {
-    id: "launch",
-    name: "AI Launch",
-    price: "$1,500",
-    suffix: "one-time setup",
-    description: "A focused first automation for a business ready to remove one expensive bottleneck.",
-    features: [
-      "One AI assistant or workflow",
-      "Lead capture integration",
-      "Basic CRM or email routing",
-      "Launch configuration",
-      "30 days of optimization"
-    ],
-    priceEnv: "STRIPE_AI_LAUNCH_PRICE_ID",
-    featured: false
-  },
-  {
-    id: "growth",
-    name: "AI Growth System",
-    price: "$3,500",
-    suffix: "starting investment",
-    description: "A connected customer journey for teams that need faster response and stronger follow-up.",
-    features: [
-      "Website assistant or receptionist",
-      "Automated lead follow-up",
-      "CRM pipeline integration",
-      "Booking and notification flows",
-      "90 days of optimization"
-    ],
-    priceEnv: "STRIPE_AI_GROWTH_PRICE_ID",
-    featured: true
-  },
-  {
-    id: "scale",
+    id: "custom-ai-operations",
     name: "Custom AI Operations",
+    setupRange: "$100-$500",
+    monthlyRange: "$100-$500/mo",
     price: "Custom",
-    suffix: "scoped around your workflow",
-    description: "A tailored system for multi-location, high-volume, or operationally complex businesses.",
+    suffix: "setup + monthly subscription",
+    description: "Every project is scoped around the business, the workflow, and how much AI support is actually needed.",
     features: [
-      "Multi-workflow architecture",
-      "Custom integrations",
-      "Ordering or kiosk experiences",
-      "Advanced reporting",
-      "Ongoing support options"
+      "Custom AI assistants, chatbots, receptionists, or follow-up systems",
+      "Website, CRM, forms, calendar, email, and workflow integrations",
+      "Setup fee is quoted separately from the monthly subscription",
+      "Monthly cost depends on usage, integrations, support, and optimization",
+      "Final scope is confirmed before work begins"
     ],
-    priceEnv: "STRIPE_AI_SCALE_PRICE_ID",
-    featured: false
+    priceEnv: "STRIPE_CUSTOM_AI_OPERATIONS_PRICE_ID",
+    featured: true
   }
 ] as const;

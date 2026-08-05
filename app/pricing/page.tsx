@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { AiSolutionsExperience } from "@/components/ai-solutions-experience";
 import { SiteHeader } from "@/components/site-header";
-import { solutionTiers } from "@/lib/ai-solutions-data";
 
 export const metadata: Metadata = {
   title: "Pricing | Elevate Systems",
@@ -15,10 +14,6 @@ export default async function PricingPage({
   searchParams?: Promise<{ checkout?: string }>;
 }) {
   const checkoutStatus = (await searchParams)?.checkout;
-  const stripeReady = Boolean(
-    process.env.STRIPE_SECRET_KEY &&
-      solutionTiers.some((tier) => Boolean(process.env[tier.priceEnv]))
-  );
 
   return (
     <main className="min-h-screen overflow-hidden pt-20">
@@ -26,7 +21,7 @@ export default async function PricingPage({
       <AiSolutionsExperience
         checkoutStatus={checkoutStatus}
         mode="pricing"
-        stripeReady={stripeReady}
+        stripeReady={false}
       />
     </main>
   );

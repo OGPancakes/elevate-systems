@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/admin-auth";
-import { deleteRecord, updateRecord } from "@/lib/supabase-admin";
+import { hashAdminPassword } from "@/lib/admin-auth";
+import { deleteRecord, insertRecord, updateRecord } from "@/lib/supabase-admin";
 
 const allowedTables = new Set(["leads", "inquiries", "bookings", "purchases"]);
 
@@ -37,4 +38,31 @@ export async function deleteAdminRecord(formData: FormData) {
   await deleteRecord(table, id);
   revalidatePath("/admin");
   redirect(`/admin/${table}`);
+}
+
+export async function createTeamMember(formData: FormData) {
+  await requireAdmin();
+  const username = String(formData.get("username") ?? "").trim();
+  const displayName = String(formData.get("displayName") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const role = String(formData.get("role") ?? "");
+
+  if (!username || !displayName || password.length < 8) {
+    throw new Error("Username, display name, and an 8+ character password are required.");
+  }
+
+  if (!["Admin", "User", "Independent Contractor"].includes(role)) {
+    throw new Error("Invalid role.");
+  }
+
+  await insertRecord("admin_users", {
+    username,
+    display_name: displayName,
+    role,
+    password_hash: hashAdminPassword(password),
+    is_active: true
+  });
+
+  revalidatePath("/admin/settings");
+  redirect("/admin/settings");
 }

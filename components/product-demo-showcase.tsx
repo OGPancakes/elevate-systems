@@ -26,14 +26,13 @@ const products = [
     name: "Elevate Receptionist",
     description: "An AI front desk for calls, questions, qualification, and booking.",
     icon: PhoneCall,
-    status: "Live demo",
-    href: "/elevatereceptionist"
+    status: "Coming very soon"
   },
   {
     name: "Elevate Leads",
-    description: "Capture, qualify, route, and follow up with every new opportunity.",
+    description: "AI text follow-up that turns old customers into booked jobs and recovered revenue.",
     icon: Target,
-    status: "Coming soon"
+    status: "Coming very soon"
   },
   {
     name: "Elevate Audit",
@@ -149,8 +148,7 @@ export function ProductDemoShowcase() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">In development</p>
             <h2 className="mt-4 text-3xl font-semibold text-white">{comingSoon}</h2>
             <p className="mx-auto mt-4 max-w-md leading-7 text-white/50">
-              This product is being shaped into the next interactive Elevate demo. The experience is
-              coming soon.
+              This product demo is being polished before we show it publicly. It is coming very soon.
             </p>
             <div className="coming-soon-progress">
               <span />

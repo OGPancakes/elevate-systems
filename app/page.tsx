@@ -114,7 +114,12 @@ export default function Home() {
       <footer className="border-t border-white/10 py-8">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 px-5 text-sm text-white/35 sm:flex-row">
           <p>Copyright 2026 Elevate Systems.</p>
-          <p>AI automation, custom websites, CRM, and workflow systems.</p>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <p>AI automation, custom websites, CRM, and workflow systems.</p>
+            <Link className="text-white/30 transition hover:text-sky-300" href="/admin">
+              Work with Elevate Systems?
+            </Link>
+          </div>
         </div>
       </footer>
 

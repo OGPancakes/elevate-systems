@@ -1,8 +1,10 @@
 import "server-only";
 
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+
+import { AdminUserRecord, listRecords } from "@/lib/supabase-admin";
 
 const COOKIE_NAME = "elevate_admin_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 12;
@@ -15,22 +17,52 @@ function sign(value: string) {
   return createHmac("sha256", getSecret()).update(value).digest("hex");
 }
 
-export function verifyAdminCredentials(username: string, password: string) {
+function safeCompare(value: string, expected: string) {
+  const valueBuffer = Buffer.from(value);
+  const expectedBuffer = Buffer.from(expected);
+  return (
+    valueBuffer.length === expectedBuffer.length &&
+    timingSafeEqual(valueBuffer, expectedBuffer)
+  );
+}
+
+function verifyEnvAdminCredentials(username: string, password: string) {
   const expectedUsername = process.env.ADMIN_USERNAME;
   const expectedPassword = process.env.ADMIN_PASSWORD;
   if (!expectedUsername || !expectedPassword) return false;
 
-  const usernameBuffer = Buffer.from(username);
-  const expectedUsernameBuffer = Buffer.from(expectedUsername);
-  const passwordBuffer = Buffer.from(password);
-  const expectedPasswordBuffer = Buffer.from(expectedPassword);
+  return safeCompare(username, expectedUsername) && safeCompare(password, expectedPassword);
+}
 
-  return (
-    usernameBuffer.length === expectedUsernameBuffer.length &&
-    passwordBuffer.length === expectedPasswordBuffer.length &&
-    timingSafeEqual(usernameBuffer, expectedUsernameBuffer) &&
-    timingSafeEqual(passwordBuffer, expectedPasswordBuffer)
-  );
+export function hashAdminPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, 64).toString("hex");
+  return `scrypt:${salt}:${hash}`;
+}
+
+function verifyPasswordHash(password: string, storedHash: string) {
+  const [method, salt, expectedHash] = storedHash.split(":");
+  if (method !== "scrypt" || !salt || !expectedHash) return false;
+  const actualHash = scryptSync(password, salt, 64).toString("hex");
+  return safeCompare(actualHash, expectedHash);
+}
+
+async function verifyStoredAdminUser(username: string, password: string) {
+  try {
+    const users = await listRecords<AdminUserRecord>(
+      "admin_users",
+      `select=*&username=eq.${encodeURIComponent(username)}&is_active=eq.true&limit=1`
+    );
+    const user = users[0];
+    return Boolean(user && verifyPasswordHash(password, user.password_hash));
+  } catch {
+    return false;
+  }
+}
+
+export async function verifyAdminCredentials(username: string, password: string) {
+  if (verifyEnvAdminCredentials(username, password)) return true;
+  return verifyStoredAdminUser(username, password);
 }
 
 export function createAdminSessionValue() {
