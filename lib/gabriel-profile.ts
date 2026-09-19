@@ -58,5 +58,12 @@ export const gabrielProfile = {
       detail: "Currently attending",
       status: "Current"
     }
+  ] satisfies ProfileEntry[],
+  mediaEntries: [
+    {
+      title: "DoctorTruth",
+      detail: "Social media and TikTok marketing",
+      status: "10M+ views generated"
+    }
   ] satisfies ProfileEntry[]
 };

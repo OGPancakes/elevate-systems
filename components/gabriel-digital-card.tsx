@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Linkedin,
   Mail,
+  Megaphone,
   MessageCircle,
   Phone,
   Share2,
@@ -63,7 +64,7 @@ async function copyPageUrl() {
 export function GabrielDigitalCard() {
   const [connectOpen, setConnectOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [openSection, setOpenSection] = useState<"elevate" | "civic" | null>(null);
+  const [openSection, setOpenSection] = useState<"elevate" | "civic" | "media" | null>(null);
 
   useEffect(() => {
     if (!connectOpen) return;
@@ -271,6 +272,48 @@ export function GabrielDigitalCard() {
                         </span>
                         {entry.status ? (
                           <span className="shrink-0 text-xs font-medium text-white/32">{entry.status}</span>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className={`overflow-hidden bg-white/[0.025] ${openSection === "media" ? "bg-sky-300/[0.035]" : ""}`}>
+              <button
+                aria-controls="media-profile-section"
+                aria-expanded={openSection === "media"}
+                className="flex w-full items-center gap-4 px-3 py-4 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-sky-300/35"
+                onClick={() => setOpenSection((current) => (current === "media" ? null : "media"))}
+                type="button"
+              >
+                <span className="grid h-10 w-10 shrink-0 place-items-center bg-white/[0.035] text-sky-300">
+                  <Megaphone className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-white">Marketing &amp; social media</span>
+                  <span className="mt-1 block text-xs text-white/40">Content strategy and audience growth</span>
+                </span>
+                <ChevronDown className={`h-4 w-4 text-white/35 transition-transform ${openSection === "media" ? "rotate-180" : ""}`} />
+              </button>
+
+              {openSection === "media" ? (
+                <div className="gabe-accordion-content px-4 pb-5 pt-1 sm:pl-[4.25rem] sm:pr-5" id="media-profile-section">
+                  <p className="max-w-md text-sm leading-6 text-white/45">
+                    Social media and TikTok marketing focused on content reach and audience engagement.
+                  </p>
+                  <div className="mt-3 grid gap-2">
+                    {gabrielProfile.mediaEntries.map((entry) => (
+                      <div className="flex items-center justify-between gap-4 bg-white/[0.025] px-3 py-3" key={entry.title}>
+                        <span>
+                          <span className="block text-sm font-semibold text-white">{entry.title}</span>
+                          <span className="mt-1 block text-xs text-white/40">{entry.detail}</span>
+                        </span>
+                        {entry.status ? (
+                          <span className="max-w-24 shrink-0 text-right text-xs font-medium leading-5 text-sky-200/70">
+                            {entry.status}
+                          </span>
                         ) : null}
                       </div>
                     ))}
