@@ -1,0 +1,145 @@
+.gabe-shell {
+  isolation: isolate;
+}
+
+.gabe-grid {
+  z-index: -3;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+.gabe-ambient {
+  position: fixed;
+  z-index: -2;
+  pointer-events: none;
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.2;
+}
+
+.gabe-ambient-one {
+  top: -7rem;
+  left: -8rem;
+  width: 23rem;
+  height: 23rem;
+  background: #0879eb;
+}
+
+.gabe-ambient-two {
+  right: -8rem;
+  top: 38%;
+  width: 18rem;
+  height: 18rem;
+  background: #22b6ef;
+  opacity: 0.1;
+}
+
+.gabe-enter {
+  animation: gabe-enter 0.7s both cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.gabe-enter:nth-of-type(2) {
+  animation-delay: 0.08s;
+}
+
+.gabe-enter:nth-of-type(3) {
+  animation-delay: 0.14s;
+}
+
+.gabe-avatar-ring {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  padding: 3px;
+  background: linear-gradient(145deg, rgba(125, 211, 252, 0.95), rgba(37, 99, 235, 0.18) 52%, rgba(255, 255, 255, 0.32));
+  box-shadow:
+    0 0 0 7px rgba(56, 189, 248, 0.04),
+    0 22px 55px rgba(0, 0, 0, 0.42),
+    0 0 42px rgba(14, 165, 233, 0.12);
+}
+
+.gabe-avatar-ring img {
+  border-radius: 999px;
+  border: 3px solid #07101d;
+  transform: scale(1.08);
+}
+
+.gabe-signature {
+  font-family: "Segoe Script", "Lucida Handwriting", "Brush Script MT", cursive;
+  font-weight: 600;
+  transform: rotate(-2deg);
+  transform-origin: left center;
+}
+
+.gabe-primary-action {
+  box-shadow: 0 15px 35px rgba(14, 165, 233, 0.22);
+}
+
+.gabe-primary-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 42px rgba(14, 165, 233, 0.3);
+}
+
+.gabe-quick-action:hover {
+  transform: translateY(-3px);
+}
+
+.gabe-accordion-content {
+  animation: gabe-accordion-in 0.32s both cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.gabe-sheet-backdrop {
+  animation: gabe-backdrop-in 0.22s ease both;
+}
+
+.gabe-sheet {
+  border-radius: 1.1rem 1.1rem 0 0;
+  animation: gabe-sheet-in 0.36s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes gabe-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gabe-backdrop-in {
+  from { opacity: 0; }
+}
+
+@keyframes gabe-accordion-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes gabe-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.98);
+  }
+}
+
+@media (min-width: 640px) {
+  .gabe-sheet {
+    border-radius: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gabe-enter,
+  .gabe-accordion-content,
+  .gabe-sheet-backdrop,
+  .gabe-sheet {
+    animation: none;
+  }
+}
