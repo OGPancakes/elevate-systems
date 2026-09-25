@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:platform": "node --test --experimental-strip-types tests/platform/*.test.ts tests/platform/*.test.mjs"
+    "test:platform": "node --test --experimental-strip-types tests/platform/*.test.ts tests/platform/*.test.mjs",
+    "test:feather": "node --test --experimental-strip-types tests/feather-integration.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",

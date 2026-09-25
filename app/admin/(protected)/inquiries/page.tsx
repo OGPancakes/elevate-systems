@@ -43,7 +43,10 @@ export default async function InquiriesPage({
         </label>
         <select className="rounded-md border border-white/10 bg-[#07101e] px-3 py-2.5 text-sm text-white" defaultValue={status} name="status">
           <option value="">All statuses</option>
-          {["New", "Contacted", "Closed", "Spam"].map((value) => <option key={value}>{value}</option>)}
+          {[
+            "New", "Contacted", "Closed", "Spam", "Submitted", "In Progress",
+            "Needs Information", "Completed", "Cancelled"
+          ].map((value) => <option key={value}>{value}</option>)}
         </select>
         <button className="rounded-md bg-sky-400 px-4 py-2.5 text-sm font-semibold text-[#03101f] hover:bg-sky-300" type="submit">Filter</button>
       </form>
@@ -54,8 +57,8 @@ export default async function InquiriesPage({
               <div className="grid items-center gap-4 px-5 py-4 sm:grid-cols-[1fr_120px_190px]" key={item.id}>
                 <RecordLink
                   href={`/admin/inquiries/${item.id}`}
-                  subtitle={`${item.email} · ${item.service_interest || "General inquiry"}`}
-                  title={item.name}
+                  subtitle={`${item.email || item.business_name || "No email provided"} · ${item.category || item.service_interest || "General inquiry"}`}
+                  title={item.request_title || item.name}
                 />
                 <StatusBadge status={item.status} />
                 <span className="text-xs text-white/40 sm:text-right">{new Date(item.submitted_at).toLocaleString()}</span>
