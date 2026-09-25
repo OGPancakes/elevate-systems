@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Layers3,
   Menu,
+  Network,
   ScanSearch,
   SlidersHorizontal,
   X
@@ -35,6 +36,12 @@ const exploreNav = [
     description: "Step inside Elevate Orders and the growing product family.",
     href: "/demos",
     icon: Layers3
+  },
+  {
+    label: "Our Ecosystem",
+    description: "Technology partners and businesses building alongside Elevate.",
+    href: "/ecosystem",
+    icon: Network
   }
 ];
 
