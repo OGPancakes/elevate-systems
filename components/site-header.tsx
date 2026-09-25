@@ -10,7 +10,6 @@ import {
   ChevronDown,
   Layers3,
   Menu,
-  Network,
   ScanSearch,
   SlidersHorizontal,
   X
@@ -19,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 const standardNav = [
+  { label: "Ecosystem", href: "/ecosystem" },
   { label: "Pricing", href: "/pricing" },
   { label: "Proof", href: "/proof" },
   { label: "Contact", href: "/#contact" }
@@ -36,12 +36,6 @@ const exploreNav = [
     description: "Step inside Elevate Orders and the growing product family.",
     href: "/demos",
     icon: Layers3
-  },
-  {
-    label: "Our Ecosystem",
-    description: "Technology partners and businesses building alongside Elevate.",
-    href: "/ecosystem",
-    icon: Network
   }
 ];
 
