@@ -16,7 +16,10 @@ export function StatusBadge({ status }: { status: string }) {
     Pending: "border-amber-300/20 bg-amber-300/10 text-amber-200",
     Paid: "border-emerald-300/20 bg-emerald-300/10 text-emerald-200",
     Failed: "border-red-300/20 bg-red-300/10 text-red-200",
-    Refunded: "border-violet-300/20 bg-violet-300/10 text-violet-200"
+    Refunded: "border-violet-300/20 bg-violet-300/10 text-violet-200",
+    Submitted: "border-sky-300/20 bg-sky-300/10 text-sky-200",
+    "In Progress": "border-amber-300/20 bg-amber-300/10 text-amber-200",
+    "Needs Information": "border-violet-300/20 bg-violet-300/10 text-violet-200"
   };
 
   return (
