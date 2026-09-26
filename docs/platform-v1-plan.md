@@ -6,7 +6,7 @@ Status: architecture established; implementation proceeds in reviewable phases. 
 
 Elevate is a Next.js 15 / React 19 application deployed on Vercel, using Supabase Postgres and private Storage through server-side REST requests. Existing leads, inquiries, bookings and purchases belong to Elevate's own sales workflow. They have no tenant boundary. The admin session is a signed expiry, not a user identity, and stored roles do not establish multi-business authorization. It must not authorize the new client portal.
 
-The unmerged `codex/feather-change-request-integration` branch adds signed Feather intake to existing inquiries with private attachments and status polling. Do not silently abandon that workflow or publish a second independent queue. Reconcile it into the platform change-request resource before enabling either integration in production.
+The `codex/feather-change-request-integration` work is incorporated into this platform branch. It adds signed Feather intake to existing inquiries with private attachments and status polling. The portal reuses inquiries with explicit business/environment ownership; legacy records are not automatically assigned or exposed. Hosted migration and delivery verification remain required before activation.
 
 Feather by Hanna uses React 19, Vinext on Cloudflare Workers, D1 database and private R2 uploads. Supabase Auth verifies explicit admin user IDs. Server handlers enforce same-origin writes and independently protect private reads. Its database holds customers, virtual/in-person consultations, photos, notes, follow-ups, managed website content, internal change requests and activity. Consultations use idempotent local persistence with recovery. Scheduling is a request/preference, not a confirmed appointment. No order fulfillment, message delivery, or external Elevate synchronization should be inferred from these records.
 
@@ -66,8 +66,8 @@ Webhook signatures use raw body bytes, key ID, timestamp, method/path and digest
 
 ## Decisions and external prerequisites
 
-- Confirm the Supabase projects designated for staging/production and Hanna's actual portal account identity. Do not guess an email or auto-grant access.
-- Approve which consultation fields may leave Feather; initial recommendation is contact details and request type only.
+- The user authorized a temporary staging project and test identity. Supabase sign-in authorization is still required before provisioning; never deliver access to an invented real email address. Hanna's actual confirmed identity is required for eventual live access.
+- The user approved customer name, email, phone, request type, IDs and submission time for the pilot. Photos and sensitive consultation answers stay in Feather.
 - Set retention/deletion policy before copying real records, especially sensitive consultation data.
 - Confirm business-member permissions; initial least-privilege model permits operational reads, excludes billing/team management and private photos.
 - Billing provider selection can wait; no payment handling is required to start the intake pilot.
