@@ -12,7 +12,7 @@ export type ProfileEntry = {
 export const gabrielProfile = {
   name: "Gabriel Thomas",
   firstName: "Gabriel",
-  image: "/gabriel-thomas-headshot-v2.jpeg",
+  image: "/gabriel-thomas-portrait-2026.jpg",
   // Draft copy: keep this centralized so Gabriel can approve or replace it quickly.
   tagline: "Building ideas, systems, and connections across business, technology, and civic life.",
   role: "Founder",

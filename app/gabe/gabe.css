@@ -64,7 +64,8 @@
 .gabe-avatar-ring img {
   border-radius: 999px;
   border: 3px solid #07101d;
-  transform: scale(1.08);
+  object-position: center top;
+  transform: scale(1.55);
 }
 
 .gabe-signature {
