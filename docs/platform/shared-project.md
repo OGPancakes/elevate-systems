@@ -22,4 +22,8 @@ Project reference: `fvnpoahaozftmedkbjpr`. Nine public tables were present and a
 
 Marketing, admin and platform share database resources and Auth configuration. A database outage, project-level change or exhausted quota can affect them all. Tenant RLS separates client records but does not provide infrastructure isolation. Avoid project-wide Auth/SMTP changes without inspecting existing usage. A separately funded staging environment can be added later.
 
-Inspection and this runbook alone do not mean the migration, invitation or deployment has been performed.
+## Applied state (2026-09-28)
+
+After explicit user approval, the combined migration was applied through the existing project's SQL editor and returned success. Read-back verified production environment, 10 platform tables, zero platform tables without RLS, zero memberships, and five existing inquiries still unassigned to portal clients. The transaction's preservation assertion passed. No new project or paid resource was created.
+
+The code branch is still a draft. Hosting environment configuration, owner invitation/password setup, user membership grants, portal sign-in verification, and Feather delivery activation are not completed. Vercel requires user sign-in. Do not rerun the initial migration: its guard intentionally rejects an already-installed platform. No API credential or synthetic customer was created in production.
