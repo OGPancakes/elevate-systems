@@ -28,6 +28,9 @@ test("PostgreSQL enforces ownership, RLS, idempotency, revocation and atomic per
       "create schema storage; create table storage.buckets(id text primary key,name text,public boolean);",
     );
     await db.exec(await readFile(new URL("../../supabase-schema.sql", import.meta.url), "utf8"));
+    const legacyId = '91c437f5-f64e-47c0-a71a-cc84da8914db';
+    await db.query("insert into inquiries(id,name,email,message,status,notes) values($1,'Existing customer','legacy@example.invalid','Existing inquiry','Contacted','Internal only')", [legacyId]);
+    const legacyBefore = (await db.query('select id,name,email,message,status,notes,created_at from inquiries where id=$1', [legacyId])).rows[0];
     await db.exec(
       await readFile(
         new URL(
@@ -50,6 +53,8 @@ test("PostgreSQL enforces ownership, RLS, idempotency, revocation and atomic per
       ),
     );
     await db.query("insert into auth.users values ($1)", [user]);
+    assert.deepEqual((await db.query('select id,name,email,message,status,notes,created_at from inquiries where id=$1', [legacyId])).rows[0], legacyBefore);
+    assert.equal((await db.query('select platform_business_id from inquiries where id=$1', [legacyId])).rows[0].platform_business_id, null);
     await db.query(
       "insert into platform_businesses(id,slug,name) values($1,'other','Other business')",
       [b],

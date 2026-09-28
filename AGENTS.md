@@ -1,7 +1,7 @@
 # Elevate Platform development
 
 ## Architecture
-The marketing website and legacy Elevate sales admin remain in this Next.js repository. Platform code is additive under `lib/platform`, `/api/v1` and `/portal`. Identity is verified through Supabase Auth. Platform credentials and membership queries must never use the legacy signed-expiry admin cookie. Supabase project separation is required for local/staging/production. Feather has a separate repository and D1/R2 source of truth.
+The marketing website and legacy Elevate sales admin remain in this Next.js repository. Platform code is additive under `lib/platform`, `/api/v1` and `/portal`. Identity is verified through Supabase Auth. Platform credentials and membership queries must never use the legacy signed-expiry admin cookie. The user chose the existing Elevate Supabase project for production on 2026-09-28; do not create another paid project. Local tests stay isolated. The shared live project is not staging and must never receive synthetic test traffic. Feather has a separate repository and D1/R2 source of truth.
 
 ## Commands
 Install with `npm ci`. Run `npm run dev`, `npx tsc --noEmit`, `npm run test:platform`, `npm run test:feather`, and `npm run build`. PostgreSQL tests use the development-only PGlite engine and synthetic data; they do not replace hosted Supabase Auth/Storage smoke tests.

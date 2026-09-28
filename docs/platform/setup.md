@@ -1,5 +1,7 @@
 # Platform setup and deployment
 
+**Current deployment choice (2026-09-28):** the user requested the existing Elevate project and no additional project. Follow [shared-project.md](./shared-project.md) for that rollout. The separate-staging instructions below remain a future option, not authorization to create a paid project.
+
 ## Environments
 
 Create a temporary **elevate-platform-staging** Supabase project and a separate staging application deployment. Never use the existing production Elevate or Feather database for experiments. Use synthetic people and a temporary test identity before Hanna's real account is invited. A placeholder email is not an actual working login.
