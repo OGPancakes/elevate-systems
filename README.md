@@ -41,3 +41,6 @@ Set the Stripe webhook endpoint to:
 
 Subscribe it to `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
 `checkout.session.async_payment_failed`, and `checkout.session.expired`.
+# Elevate Platform V1
+
+The platform feature branch adds `/portal` and `/api/v1` with tenant-scoped intake and database-enforced access. Start with [the assessment](docs/platform-v1-plan.md), [API contract](docs/platform/api.md), and [environment/deployment runbook](docs/platform/setup.md). The staging pilot must pass before production activation. Run `npm run test:platform` for policy and PostgreSQL isolation tests.
